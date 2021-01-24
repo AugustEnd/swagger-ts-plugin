@@ -42,7 +42,7 @@ module.exports = {
 ```txt
 ├── swagger2ts
 	├── [service1].swagger2.d.ts
-    ├── [service2].swagger2.d.ts
+	├── [service2].swagger2.d.ts
 	└── ...
 ```
 
