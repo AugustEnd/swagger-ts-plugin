@@ -39,11 +39,12 @@ module.exports = {
 ```
 
 ### output
-
+```txt
 ├── swagger2ts
 	├── [service1].swagger2.d.ts
     ├── [service2].swagger2.d.ts
 	└── ...
+```
 
 ```ts
 // 文件 [service1].swagger2.d.ts;
