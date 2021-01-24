@@ -13,8 +13,41 @@
 该插件根据 swagger 提供的 api-doc 返回的接口数据，生成前端写 ts 所需的接口定义。
 如果你正在使用用 ts 并且后端接口文档是 swagger 的话，这个插件适合你
 
+**webpack.config.js**
+
+```js
+const Swapper2TsPlugin = require("@tms/swagger2ts-plugin");
+/**
+ * outputPath 输出地址
+ * appUrl 必须是贵公司的eureka所有服务列表地址 http://eureka.dev.com:1111/eureka/apps 当前地址返回的是xml格式数据，插件会处理
+ */
+module.exports = {
+    entry: "index.js",
+    output: {
+        path: __dirname + "/dist",
+        filename: "index_bundle.js",
+    },
+    plugins: [
+        new Swapper2TsPlugin({
+            outputPath: path.resolve(__dirname, "../"),
+			serverList: ["trialpartner-web", "sms-service"],
+			// 必须提供 http://eureka.dev.com:1111(eureka地址)+ /eureka/apps
+            appUrl: "http://eureka.dev.com:1111/eureka/apps", 
+        }),
+    ],
+};
+```
+
+### output
+
+├── swagger2ts
+	├── [service1].swagger2.d.ts
+    ├── [service2].swagger2.d.ts
+	└── ...
+
 ```ts
-// 生成是多服务的接口 生成如下interface和注释
+// 文件 [service1].swagger2.d.ts;
+// 生成如下interface和注释
 /**
  * @param answerContent (string) 回答内容
  * @param answerPersonId (string) 回答人id
@@ -47,31 +80,6 @@ export interface AnswerDTO {
     sourceSystem: string | null;
     subjectInfoDTO: SubjectInfoDTO;
 }
-```
-
-**webpack.config.js**
-
-```js
-const Swapper2TsPlugin = require("@tms/swagger2ts-plugin");
-/**
- * outputPath 输出地址
- * appUrl 必须是贵公司的eureka所有服务列表地址 http://eureka.dev.com:1111/eureka/apps 当前地址返回的是xml格式数据，插件会处理
- */
-module.exports = {
-    entry: "index.js",
-    output: {
-        path: __dirname + "/dist",
-        filename: "index_bundle.js",
-    },
-    plugins: [
-        new Swapper2TsPlugin({
-            outputPath: path.resolve(__dirname, "../"),
-			serverList: ["trialpartner-web", "sms-service"],
-			// 必须提供 http://eureka.dev.com:1111(eureka地址)+ /eureka/apps
-            appUrl: "http://eureka.dev.com:1111/eureka/apps", 
-        }),
-    ],
-};
 ```
 
 |         Name          |                               Type                                |                  Default                   | Description                                                                                                                 |
