@@ -1,21 +1,25 @@
 {
-  "name": "swagger-ts-plugin",
-  "version": "1.1.5",
-  "description": "获取swagger信息转ts接口",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
-  "scripts": {
-    "build": "tsc || true",
-    "test": "cross-env ts-node ./src/index.ts"
-  },
-  "author": "1543259203@qq.com",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^14.14.22",
-    "cross-env": "^7.0.3",
-    "fast-xml-parser": "^3.17.6",
-    "ts-loader": "^8.0.14",
-    "ts-node": "^9.1.1",
-    "typescript": "^4.1.3"
-  }
+    "name": "swagger-ts-plugin",
+    "version": "1.1.5",
+    "description": "获取swagger信息转ts接口",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "scripts": {
+        "build": "tsc || true",
+        "test": "cross-env ts-node ./src/index.ts"
+    },
+    "author": {
+        "name": "gaofeng.ye",
+        "email": "1543259203@qq.com",
+        "url": "https://github.com/AugustEnd/swagger-ts-plugin"
+    },
+    "license": "MIT",
+    "devDependencies": {
+        "@types/node": "^14.14.22",
+        "cross-env": "^7.0.3",
+        "fast-xml-parser": "^3.17.6",
+        "ts-loader": "^8.0.14",
+        "ts-node": "^9.1.1",
+        "typescript": "^4.1.3"
+    }
 }
