@@ -39,6 +39,7 @@ interface IData extends IProps {
 }
 
 const getData = async ({ serviceName, serviceUrl, path }: IData) => {
+    console.log
     const msg = (await new Promise((resolve, reject) => {
         http.get(`${serviceUrl}${path}`, (val: any) => {
             resolve(val);
@@ -52,11 +53,17 @@ const getData = async ({ serviceName, serviceUrl, path }: IData) => {
     msg.on("data", (chunk: any) => {
         rawData += chunk;
     });
-
+    // const data = JSON.parse(rawData);
+    // console.log(data)
     return await new Promise((resolve, reject) => {
         msg.on("end", () => {
+            const data = JSON.parse(rawData);
             try {
-                resolve({ data: JSON.parse(rawData).definitions, serviceName });
+                resolve({
+                    data: data.definitions,
+                    serviceName,
+                    paths: data.paths,
+                });
             } catch (e) {
                 reject(e.message);
             }

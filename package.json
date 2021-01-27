@@ -7,7 +7,7 @@
 	"keywords": ["swagger","typescript","xml"],
     "scripts": {
         "build": "tsc || true",
-        "test": "cross-env ts-node ./src/index.ts"
+        "test": "cross-env ts-node ./src/execute.ts"
     },
     "author": {
         "name": "gaofeng.ye",

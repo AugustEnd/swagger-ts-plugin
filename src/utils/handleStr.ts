@@ -101,7 +101,11 @@ export const completeInterface = (key: string, val: any) => {
 };
 
 interface IAllInterface {
-    interfaceObj: { [key: string]: any };
+    interfaceObj: {
+        data: { [key: string]: any };
+        serviceName: string;
+        paths: { [key: string]: any };
+    };
     options?: {
         path?: string;
         fileName?: string;
@@ -110,7 +114,7 @@ interface IAllInterface {
 }
 
 /**
- * 当前swagger所有的接口
+ * 当前swagger所有的接口 写入文件夹
  * @param interfaceObj 接口对象
  * @param options 接口对象
  */
@@ -123,41 +127,38 @@ export const completeInterfaceAll = async (
         name: "name",
         ...(options || {}),
     };
-    
+
     let str = "";
-    for (let key in interfaceObj) {
-        str += completeInterface(key, interfaceObj[key]) + "\n";
+    for (let key in interfaceObj.data) {
+        str += completeInterface(key, interfaceObj.data[key]) + "\n";
     }
 
     try {
-        if (!fs.existsSync(newOptions.path)) {
-            await new Promise((resolve, reject) => {
-                fs.mkdir(newOptions.path, { recursive: true }, (err: any) => {
+        await new Promise((resolve, reject) => {
+            fs.mkdir(
+                [newOptions.path, newOptions.name].join("/"),
+                { recursive: true },
+                (err: any) => {
                     if (!err) {
                         resolve(1);
                     } else {
                         reject(err);
                     }
-                });
-            });
-        }
-        console.log(
-            "文件地址",
-            `${newOptions.path}/${newOptions.fileName.replace(
-                /\[\S*\]/g,
-                newOptions.name
-            )}`
-        );
+                }
+            );
+        });
+
         fs.writeFile(
-            `${newOptions.path}/${newOptions.fileName.replace(
-                /\[\S*\]/g,
-                newOptions.name
-            )}`,
+            [newOptions.path, newOptions.name, "interface.d.ts"].join("/"),
             str,
             () => {}
         );
     } catch (error) {}
 };
+
+// const apiFileInfo = (paths)=>{
+
+// }
 
 export const handleServiceUrl = (
     appList: Array<any>,
