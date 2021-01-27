@@ -1,9 +1,9 @@
 ```bash
-  npm i --save-dev @tms/swagger2ts-plugin
+  npm i --save-dev swagger-ts-plugin
 ```
 
 ```bash
-  yarn add --dev @tms/swagger2ts-plugin
+  yarn add --dev swagger-ts-plugin
 ```
 
 ### `Plugins`
@@ -16,7 +16,7 @@
 **webpack.config.js**
 
 ```js
-const Swapper2TsPlugin = require("@tms/swagger2ts-plugin");
+const Swapper2TsPlugin = require("swagger-ts-plugin");
 /**
  * outputPath 输出地址
  * appUrl 必须是贵公司的eureka所有服务列表地址 http://eureka.dev.com:1111/eureka/apps 当前地址返回的是xml格式数据，插件会处理
