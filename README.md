@@ -5,8 +5,10 @@
 ```bash
   yarn add --dev swagger-ts-plugin
 ```
-
 ### `Plugins`
+***
+### links 
+[github](https://github.com/AugustEnd/swagger-ts-plugin)
 
 ### Usage
 
@@ -22,22 +24,19 @@ const Swapper2TsPlugin = require("swagger-ts-plugin");
  * appUrl 必须是贵公司的eureka所有服务列表地址 http://eureka.dev.com:1111/eureka/apps 当前地址返回的是xml格式数据，插件会处理
  */
 module.exports = {
-    entry: "index.js",
-    output: {
-        path: __dirname + "/dist"
-    },
     plugins: [
         new Swapper2TsPlugin({
             outputPath: path.resolve(__dirname, "../"),
-			serverList: ["trialpartner-web", "sms-service"],
-			// 必须提供 http://eureka.dev.com:1111(eureka地址)+ /eureka/apps
-            appUrl: "http://eureka.dev.com:1111/eureka/apps", 
+            serverList: ["trialpartner-web", "sms-service"],
+            // 必须提供 http://eureka.dev.com:1111(eureka地址)+ /eureka/apps
+            appUrl: "http://eureka.dev.com:1111/eureka/apps",
         }),
     ],
 };
 ```
 
 ### output
+
 ```txt
 ├── swagger2ts
 	├── [serviceName1]
@@ -50,7 +49,17 @@ module.exports = {
 ```
 
 ```ts
-// 文件 [service1].swagger2.d.ts;
+// 文件 [service1]/paths.d.ts;
+
+import { AnswerDTO } from "./interface.d";
+interface pathsObj {
+    "/calendar/deleteCalendarNoticeRecord": {
+        method: "delete";
+        data: AnswerDTO;
+    };
+}
+
+// 文件 [service1]/interface.d.ts;
 // 生成如下interface和注释
 /**
  * @param answerContent (string) 回答内容
@@ -86,9 +95,8 @@ export interface AnswerDTO {
 }
 ```
 
-|         Name          |                               Type                                |                  Default                   | Description                                                                                                                 |
-| :-------------------: | :---------------------------------------------------------------: | :----------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------- |
-| **[`outputPath`](#)** |                            `{String}`                             |   `{path.resolve(__dirname, "../../")}`    | 生成 ts 文件输入的文件夹位置                                                                                                |
-| **[`serverList`](#)** | `{Array<{serviceName: string;serviceUrl:string;}>,Array<string>}` |                    `[]`                    | 当前字段必传如果穿数组字符串['sms-service'] 后端服务名，如果是字符串对象，必传服务名称和服务地址                            |
-|   **[`appUrl`](#)**   |                            `{String}`                             | `"http://eureka.dev.com:1111/eureka/apps"` | 后端所有服务注册信息                                                                                                        |
-
+|         Name          |                               Type                                |                  Default                   | Description                                                                                      |
+| :-------------------: | :---------------------------------------------------------------: | :----------------------------------------: | :----------------------------------------------------------------------------------------------- |
+| **[`outputPath`](#)** |                            `{String}`                             |   `{path.resolve(__dirname, "../../")}`    | 生成 ts 文件输入的文件夹位置                                                                     |
+| **[`serverList`](#)** | `{Array<{serviceName: string;serviceUrl:string;}>,Array<string>}` |                    `[]`                    | 当前字段必传如果穿数组字符串['sms-service'] 后端服务名，如果是字符串对象，必传服务名称和服务地址 |
+|   **[`appUrl`](#)**   |                            `{String}`                             | `"http://eureka.dev.com:1111/eureka/apps"` | 后端所有服务注册信息                                                                             |
