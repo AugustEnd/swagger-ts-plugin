@@ -19,4 +19,8 @@ module.exports = class Swapper2TsPlugin {
             startCreate(this.options);
         });
     }
+    // 暴露当前方法目的是，使用者可以主动触发命令
+    build() {
+        startCreate(this.options);
+    }
 };
