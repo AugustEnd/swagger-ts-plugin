@@ -1,6 +1,6 @@
 {
     "name": "swagger-ts-plugin",
-    "version": "1.1.9",
+    "version": "1.1.10",
     "description": "获取swagger信息转ts接口",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
