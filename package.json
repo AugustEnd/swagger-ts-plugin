@@ -10,7 +10,7 @@
         "xml"
     ],
     "scripts": {
-        "build": "tsc || true",
+        "build": "cross-env ts-node ./src/del.ts && tsc || true",
         "test": "cross-env ts-node ./src/execute/index.ts"
     },
     "author": {

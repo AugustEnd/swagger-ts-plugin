@@ -144,7 +144,7 @@ export const completeInterfaceAll = async (
 export const handleServiceUrl = (
     appList: Array<any>,
     serverList: Array<string>
-) => {
+): Array<{ serviceName: string; serviceUrl: string }> => {
     let mySet = new Set(serverList);
     return appList
         .filter((el) => mySet.has(el.instance.vipAddress))

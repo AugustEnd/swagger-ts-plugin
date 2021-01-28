@@ -6,8 +6,10 @@ startCreate({
     outputPath: path.resolve(__dirname, "../../"),
     serverList: [
         {
-            serviceName: "tms-client",
+            serviceName: "xxx-service",
             serviceUrl: "http://172.20.37.153:8200/api/",
         },
+        "trialpartner-web",
+        "sms-service",
     ],
 });

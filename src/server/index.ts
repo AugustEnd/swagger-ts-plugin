@@ -20,15 +20,20 @@ export async function startCreate({
 }: ISwaggerProps) {
     if (serverList.length === 0) return;
     let serviceArr: Array<IServiceProps> = [];
-    if (typeof serverList[0] === "string") {
-        const { data: appList } = (await getAllServiceList({
-            url: appUrl || "http://eureka.dev.com:1111/eureka/apps",
-        })) as any;
 
-        serviceArr = handleServiceUrl(appList, serverList as any);
-    } else {
-        serviceArr = serverList as any;
-    }
+    // 所有服务信息
+    const { data: appList } = (await getAllServiceList({
+        url: appUrl || "http://eureka.dev.com:1111/eureka/apps",
+    })) as any;
+
+    serviceArr = serverList
+        .filter((el) => typeof el !== "string")
+        .concat(
+            handleServiceUrl(
+                appList,
+                serverList.filter((el: any) => typeof el === "string") as any
+            )
+        ) as any;
 
     // 删除当前路径下所有文件
     delDir(path.resolve(outputPath || +__dirname, "./swagger2ts"), {
@@ -43,16 +48,25 @@ export async function startCreate({
             })
         )
     ).then((values) => {
-        values.map((el: any) => {
-            completeInterfaceAll(el, {
-                name: el.serviceName,
-                path: path.resolve(outputPath || +__dirname, "./swagger2ts"),
+        // 过滤出错的服务
+        values
+            .filter((el: any) => el)
+            .map((el: any) => {
+                completeInterfaceAll(el, {
+                    name: el.serviceName,
+                    path: path.resolve(
+                        outputPath || +__dirname,
+                        "./swagger2ts"
+                    ),
+                });
+                completePathAll(el.paths, {
+                    name: el.serviceName,
+                    path: path.resolve(
+                        outputPath || +__dirname,
+                        "./swagger2ts"
+                    ),
+                });
             });
-            completePathAll(el.paths, {
-                name: el.serviceName,
-                path: path.resolve(outputPath || +__dirname, "./swagger2ts"),
-            });
-        });
     });
 }
 
