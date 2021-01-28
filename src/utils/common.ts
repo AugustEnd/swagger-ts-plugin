@@ -5,7 +5,12 @@ const fs = require("fs");
 export const handleSpecialSymbol = (key: string | any) => {
     return typeof key !== "string"
         ? key
-        : key.replace(/«/g, "_").replace(/»/g, "");
+        : key
+              .replace(/«/g, "_")
+              .replace(/»/g, "")
+              .replace(/\(/g, "_")
+              .replace(/\)/g, "")
+              .replace(/[\?|\,|\.]/g, "");
 };
 
 /**

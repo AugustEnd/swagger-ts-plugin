@@ -1,4 +1,5 @@
-import { startCreate, defaultValue, ISwaggerProps } from "./server";
+import { ISwaggerProps } from "./server/index.d";
+import { startCreate, defaultValue } from "./server/index";
 
 /**
  * @param outputPath 输出地址

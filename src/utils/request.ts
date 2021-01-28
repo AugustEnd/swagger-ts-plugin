@@ -71,6 +71,11 @@ const getData = async ({ serviceName, serviceUrl, path }: IData) => {
     });
 };
 
+/**
+ * 返回单个服务的数据
+ * @param param0 servername
+ */
+
 export const getSimpleServiceData = async ({
     serviceName,
     serviceUrl,

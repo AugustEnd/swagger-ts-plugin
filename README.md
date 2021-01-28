@@ -24,8 +24,7 @@ const Swapper2TsPlugin = require("swagger-ts-plugin");
 module.exports = {
     entry: "index.js",
     output: {
-        path: __dirname + "/dist",
-        filename: "index_bundle.js",
+        path: __dirname + "/dist"
     },
     plugins: [
         new Swapper2TsPlugin({
@@ -41,8 +40,12 @@ module.exports = {
 ### output
 ```txt
 ├── swagger2ts
-	├── [service1].swagger2.d.ts
-	├── [service2].swagger2.d.ts
+	├── [serviceName1]
+        ├── interface.d.ts
+        ├── paths.ts
+	├── [serviceName2]
+        ├── interface.d.ts
+        ├── paths.ts
 	└── ...
 ```
 
@@ -88,4 +91,4 @@ export interface AnswerDTO {
 | **[`outputPath`](#)** |                            `{String}`                             |   `{path.resolve(__dirname, "../../")}`    | 生成 ts 文件输入的文件夹位置                                                                                                |
 | **[`serverList`](#)** | `{Array<{serviceName: string;serviceUrl:string;}>,Array<string>}` |                    `[]`                    | 当前字段必传如果穿数组字符串['sms-service'] 后端服务名，如果是字符串对象，必传服务名称和服务地址                            |
 |   **[`appUrl`](#)**   |                            `{String}`                             | `"http://eureka.dev.com:1111/eureka/apps"` | 后端所有服务注册信息                                                                                                        |
-|  **[`fileName`](#)**  |                            `{string}`                             |          `"[name].swagger2.d.ts"`          | 每个服务输出的文件名称默认【[服务 mingc].自定义.d.ts。 请满足当前正则 new RegExp(/^[a-zA-Z0-9]_\[\S_\][a-zA-Z0-9]\*.d.ts$/) |
+

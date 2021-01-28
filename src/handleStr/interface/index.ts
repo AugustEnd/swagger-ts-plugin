@@ -1,14 +1,8 @@
-import { handleSpecialSymbol } from "./common";
+import { handleSpecialSymbol } from "../../utils/common";
 const fs = require("fs");
-type JavaType =
-    | "array"
-    | "boolean"
-    | "string"
-    | "integer"
-    | "number"
-    | "object"
-    | undefined;
 
+// 类型
+import { JavaType, IAllInterface } from "./index.d";
 /**
  * 映射后端语言类型与ts类型
  * @param param0
@@ -99,19 +93,6 @@ export const completeInterface = (key: string, val: any) => {
     )} {${tsStr}\n}
 `;
 };
-
-interface IAllInterface {
-    interfaceObj: {
-        data: { [key: string]: any };
-        serviceName: string;
-        paths: { [key: string]: any };
-    };
-    options?: {
-        path?: string;
-        fileName?: string;
-        name?: string;
-    };
-}
 
 /**
  * 当前swagger所有的接口 写入文件夹
