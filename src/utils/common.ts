@@ -10,7 +10,7 @@ export const handleSpecialSymbol = (key: string | any) => {
               .replace(/»/g, "")
               .replace(/\(/g, "_")
               .replace(/\)/g, "")
-              .replace(/[\?|\,|\.|\-]/g, "");
+              .replace(/[\?|\,|\.|\-|\/]/g, "");
 };
 
 /**

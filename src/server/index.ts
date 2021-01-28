@@ -39,7 +39,6 @@ export async function startCreate({
     delDir(path.resolve(outputPath || +__dirname, "./swagger2ts"), {
         deleteCurrPath: false,
     });
-
     Promise.all(
         serviceArr.map((item: any) =>
             getSimpleServiceData({

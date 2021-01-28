@@ -9,7 +9,8 @@ startCreate({
             serviceName: "xxx-service",
             serviceUrl: "http://172.20.37.153:8200/api/",
         },
-        "trialpartner-web",
-        "sms-service",
+        "pv-io",
+        "omp-service",
+        "master-data-service",
     ],
 });

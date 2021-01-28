@@ -147,7 +147,16 @@ export const handleServiceUrl = (
 ): Array<{ serviceName: string; serviceUrl: string }> => {
     let mySet = new Set(serverList);
     return appList
-        .filter((el) => mySet.has(el.instance.vipAddress))
+        .filter((el) => {
+            if (
+                Reflect.apply(Object.prototype.toString, [], el.instance) ===
+                    "[object Array]" &&
+                el.instance.length > 0
+            ) {
+                el.instance = el.instance[0];
+            }
+            return mySet.has(el.instance.vipAddress);
+        })
         .map((el) => ({
             serviceName: el.instance.vipAddress,
             serviceUrl: el.instance.homePageUrl,

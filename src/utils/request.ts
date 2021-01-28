@@ -1,6 +1,4 @@
-const fs = require("fs");
 const http = require("http");
-const paths = require("path");
 const parser = require("fast-xml-parser");
 interface IProps {
     serviceName: string;
