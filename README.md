@@ -42,10 +42,10 @@ module.exports = {
 ├── swagger2ts
 	├── [serviceName1]
         ├── interface.d.ts
-        ├── paths.ts
+        └── paths.ts
 	├── [serviceName2]
         ├── interface.d.ts
-        ├── paths.ts
+        └── paths.ts
 	└── ...
 ```
 

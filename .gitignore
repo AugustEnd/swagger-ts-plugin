@@ -2,3 +2,4 @@
 .git
 .idea
 /swagger2ts
+yarn-error.log

@@ -1,10 +1,14 @@
 {
     "name": "swagger-ts-plugin",
-    "version": "1.1.6",
+    "version": "1.1.7",
     "description": "获取swagger信息转ts接口",
     "main": "lib/index.js",
-	"types": "lib/index.d.ts",
-	"keywords": ["swagger","typescript","xml"],
+    "types": "lib/index.d.ts",
+    "keywords": [
+        "swagger",
+        "typescript",
+        "xml"
+    ],
     "scripts": {
         "build": "tsc || true",
         "test": "cross-env ts-node ./src/execute/index.ts"
