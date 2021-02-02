@@ -119,9 +119,12 @@ export interface AnswerDTO {
 
 ### The last
 ***
-如果觉得对你开发用所提升的话，给个[Star](https://github.com/AugustEnd/swagger-ts-plugin)⭐️ 鼓励一下吧
+如果觉得对你开发效率有所提升的话，给个[Star](https://github.com/AugustEnd/swagger-ts-plugin)⭐️ 鼓励一下吧~
 
-```js
+
+
+
+```ts
 /*
  *                        ::
  *                       :;J7, :,                        ::;7:
