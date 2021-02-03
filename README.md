@@ -5,6 +5,8 @@
 ```bash
   yarn add --dev swagger-ts-plugin
 ```
+***
+<a href="https://github.com/AugustEnd/swagger-ts-plugin" target="\_parent"><img src="https://img.shields.io/github/stars/AugustEnd/swagger-ts-plugin.svg?style=social&label=Star"/></a>
 
 ### Usage
 
@@ -111,18 +113,17 @@ export interface AnswerDTO {
 }
 ```
 
-|         Name          |                               Type                                |                  Default                   | Description                                                                                      |
-| :-------------------: | :---------------------------------------------------------------: | :----------------------------------------: | :----------------------------------------------------------------------------------------------- |
-| **[`outputPath`](#)** |                            `{String}`                             |   `{path.resolve(__dirname, "../../")}`    | 生成 ts 文件输入的文件夹位置                                                                     |
+|         Name          |                            Type                            |                  Default                   | Description                                                                                      |
+| :-------------------: | :--------------------------------------------------------: | :----------------------------------------: | :----------------------------------------------------------------------------------------------- |
+| **[`outputPath`](#)** |                         `{String}`                         |   `{path.resolve(__dirname, "../../")}`    | 生成 ts 文件输入的文件夹位置                                                                     |
 | **[`serverList`](#)** | `{Array<{serviceName: string;serviceUrl:string;},string>}` |                    `[]`                    | 当前字段必传如果穿数组字符串['sms-service'] 后端服务名，如果是字符串对象，必传服务名称和服务地址 |
-|   **[`appUrl`](#)**   |                            `{String}`                             | `"http://eureka.dev.com:1111/eureka/apps"` | 后端所有服务注册信息                                                                             |
+|   **[`appUrl`](#)**   |                         `{String}`                         | `"http://eureka.dev.com:1111/eureka/apps"` | 后端所有服务注册信息                                                                             |
 
 ### The last
-***
+
+---
+
 如果觉得对你开发效率有所提升的话，给个[Star](https://github.com/AugustEnd/swagger-ts-plugin)⭐️ 鼓励一下吧~
-
-
-
 
 ```ts
 /*
@@ -160,5 +161,4 @@ export interface AnswerDTO {
  *         , , ,,,:,,::::::::iiiiiiiiii:,:,:::::::::iiir;ri7vL77rrirri::
  *          :,, , ::::::::i:::i:::i:i::,,,,,:,::i:i:::iir;@Secbone.ii:::
  */
-
 ```
