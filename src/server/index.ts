@@ -39,34 +39,44 @@ export async function startCreate({
     delDir(path.resolve(outputPath || +__dirname, "./swagger2ts"), {
         deleteCurrPath: false,
     });
-    Promise.all(
-        serviceArr.map((item: any) =>
-            getSimpleServiceData({
-                serviceName: item.serviceName,
-                serviceUrl: item.serviceUrl,
-            })
-        )
-    ).then((values) => {
-        // 过滤出错的服务
-        values
-            .filter((el: any) => el)
-            .map((el: any) => {
-                completeInterfaceAll(el, {
-                    name: el.serviceName,
-                    path: path.resolve(
-                        outputPath || +__dirname,
-                        "./swagger2ts"
-                    ),
-                });
-                completePathAll(el.paths, {
-                    name: el.serviceName,
-                    path: path.resolve(
-                        outputPath || +__dirname,
-                        "./swagger2ts"
-                    ),
-                });
-            });
-    });
+    try {
+        const values: Array<any> = await Promise.all(
+            serviceArr.map((item: any) =>
+                getSimpleServiceData({
+                    serviceName: item.serviceName,
+                    serviceUrl: item.serviceUrl,
+                })
+            )
+        );
+        const paths = await Promise.all(
+            values
+                .filter((el: any) => el)
+                .map(async (el: any) => {
+                    try {
+                        await completeInterfaceAll(el, {
+                            name: el.serviceName,
+                            path: path.resolve(
+                                outputPath || +__dirname,
+                                "./swagger2ts"
+                            ),
+                        });
+                        await completePathAll(el.paths, {
+                            name: el.serviceName,
+                            path: path.resolve(
+                                outputPath || +__dirname,
+                                "./swagger2ts"
+                            ),
+                        });
+                        return Promise.resolve();
+                    } catch (error) {
+                        return Promise.reject(error);
+                    }
+                })
+        );
+        return Promise.resolve("转换完成");
+    } catch (error) {
+        return Promise.reject(error);
+    }
 }
 
 export const defaultValue: ISwaggerProps = {

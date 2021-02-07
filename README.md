@@ -12,6 +12,10 @@
 
 该插件根据 swagger 提供的 api-doc 返回的接口数据，生成前端写 ts 所需的接口定义。
 如果你正在使用 ts 并且后端接口文档是 swagger 的话，这个插件适合你
+### vscode插件 
+新增加同样功能的vscode插件
+vscode 插件中搜索 vscode-swagger2ts-plugin安装
+记得给好评呀o.O 
 
 **webpack.config.js**
 
