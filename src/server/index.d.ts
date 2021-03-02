@@ -7,4 +7,11 @@ export interface ISwaggerProps {
     serverList: Array<string | IServiceProps>;
     outputPath?: string;
     appUrl?: string;
+    fanyi?: {
+        baidu?: {
+            appid: string;
+            secretKey: string;
+            maxLimit: number;
+        };
+    };
 }

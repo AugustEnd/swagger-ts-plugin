@@ -37,7 +37,6 @@ interface IData extends IProps {
 }
 
 const getData = async ({ serviceName, serviceUrl, path }: IData) => {
-    console.log;
     const msg = (await new Promise((resolve, reject) => {
         http.get(`${serviceUrl}${path}`, (val: any) => {
             resolve(val);
