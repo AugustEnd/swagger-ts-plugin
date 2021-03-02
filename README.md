@@ -115,6 +115,16 @@ export interface AnswerDTO {
     sourceSystem: string | null;
     subjectInfoDTO: SubjectInfoDTO;
 }
+
+// 文件 swagger2ts/translation.json
+// 收集所有中文翻译
+{
+    "受试者知情同意签署": "SubjectInformedConsentSignature",
+    "文章信息": "ArticleInformation",
+    "质疑返回对象": "QueryReturnObject",
+    ...
+}
+
 ```
 
 |         Name          |                            Type                            |                  Default                   | Description                                                                                      |
@@ -122,6 +132,8 @@ export interface AnswerDTO {
 | **[`outputPath`](#)** |                         `{String}`                         |   `{path.resolve(__dirname, "../../")}`    | 生成 ts 文件输入的文件夹位置                                                                     |
 | **[`serverList`](#)** | `{Array<{serviceName: string;serviceUrl:string;},string>}` |                    `[]`                    | 当前字段必传如果穿数组字符串['sms-service'] 后端服务名，如果是字符串对象，必传服务名称和服务地址 |
 |   **[`appUrl`](#)**   |                         `{String}`                         | `"http://eureka.dev.com:1111/eureka/apps"` | 后端所有服务注册信息                                                                             |
+|   **[`fanyi`](#)**   |                         `{object}`                         | `{baidu: { appid: "20210301000711374",secretKey: "qyjxl2zU20BwQ8sfdyxt",maxLimit: 2000}}` | 配置百度翻译appid和秘钥，maxLimit不能超过2000     |
+
 
 ### The last
 
