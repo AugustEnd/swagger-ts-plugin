@@ -6,11 +6,7 @@ const execute = async () => {
         ...defaultValue,
         outputPath: path.resolve(__dirname, "../../"),
         serverList: [
-            "trialpartner-web",
-            "sms-service",
-            "unm-service",
-            "EDC-LAB",
-            "iit-sms-service",
+            "zhiyi-app",
         ],
         appUrl: "http://eureka.test.com:1111/eureka/apps",
     });

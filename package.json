@@ -1,6 +1,6 @@
 {
     "name": "swagger-ts-plugin",
-    "version": "1.1.18",
+    "version": "1.1.19",
     "description": "获取swagger信息转ts接口",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -10,7 +10,7 @@
         "xml"
     ],
     "scripts": {
-        "build": "cross-env ts-node ./src/del.ts && tsc || true",
+        "build": "cross-env ts-node ./src/del.ts && tsc && babel lib --out-dir lib",
         "test": "cross-env ts-node ./src/execute/index.ts"
     },
     "author": {
@@ -20,6 +20,9 @@
     },
     "license": "MIT",
     "devDependencies": {
+        "@babel/cli": "^7.13.10",
+        "@babel/core": "^7.13.10",
+        "@babel/preset-env": "^7.13.10",
         "@types/node": "^14.14.22",
         "cross-env": "^7.0.3",
         "ts-loader": "^8.0.14",
