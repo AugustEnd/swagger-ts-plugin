@@ -1,6 +1,6 @@
 {
     "name": "swagger-ts-plugin",
-    "version": "1.1.20",
+    "version": "1.1.22",
     "description": "获取swagger信息转ts接口",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -24,7 +24,6 @@
         "@babel/core": "^7.13.10",
         "@babel/plugin-transform-runtime": "^7.13.10",
         "@babel/preset-env": "^7.13.10",
-        "@babel/runtime-corejs3": "^7.13.10",
         "@types/node": "^14.14.22",
         "cross-env": "^7.0.3",
         "ts-loader": "^8.0.14",
@@ -33,6 +32,7 @@
     },
     "dependencies": {
         "fast-xml-parser": "^3.17.6",
+        "@babel/runtime-corejs3": "^7.13.10",
         "md5": "^2.3.0"
     }
 }
