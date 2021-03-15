@@ -88,7 +88,7 @@ export const completePathAll = async (
     str = `import {${Array.from(importSet.values()).join(
         ","
     )}} from './interface.d';
-interface pathsObj {\n${str}}`;
+export interface pathsObj {\n${str}}`;
 
     try {
         await new Promise((resolve, reject) => {
