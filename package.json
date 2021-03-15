@@ -1,6 +1,6 @@
 {
     "name": "swagger-ts-plugin",
-    "version": "1.1.22",
+    "version": "1.1.23",
     "description": "获取swagger信息转ts接口",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -34,5 +34,8 @@
         "fast-xml-parser": "^3.17.6",
         "@babel/runtime-corejs3": "^7.13.10",
         "md5": "^2.3.0"
+    },
+    "engines": {
+        "node": ">=12.0.0"
     }
 }
