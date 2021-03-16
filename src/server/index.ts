@@ -5,9 +5,11 @@ import {
     handleServiceUrl,
 } from "../handleStr/interface/index";
 
-import { getSimpleServiceData, getAllServiceList } from "../utils/request";
+import { getSimpleServiceData } from "../utils/request";
 import { delDir } from "../utils/common";
 import { completePathAll } from "../handleStr/paths/index";
+
+import completeServiceList from "../http/serviceInfo";
 // 辅助方法
 import {
     collectChinese,
@@ -17,7 +19,7 @@ import {
 // 翻译
 import { getTranslateInfo } from "../translation/index";
 // 类型
-import { ISwaggerProps, IServiceProps } from "./index.d";
+import { ISwaggerProps, IServiceProps } from "../index.d";
 
 /**
  * 项目主要方法
@@ -26,27 +28,16 @@ import { ISwaggerProps, IServiceProps } from "./index.d";
 
 export async function startCreate(options: ISwaggerProps) {
     const { outputPath, serverList, appUrl } = options;
-
+    global.options = options;
     if (serverList.length === 0) return;
     let serviceArr: Array<IServiceProps> = [];
     try {
         // 所有服务信息
-        const { data: appList } = (await getAllServiceList({
-            url: appUrl || "http://eureka.dev.com:1111/eureka/apps",
-        })) as any;
+        const { data: appList } = await getAllServiceList();
 
         // 获取所有服务请求前完整信息，包含服务名称和服务ip
-        serviceArr = serverList
-            .filter((el) => typeof el !== "string")
-            .concat(
-                handleServiceUrl(
-                    appList,
-                    serverList.filter(
-                        (el: any) => typeof el === "string"
-                    ) as any
-                )
-            ) as any;
-
+        serviceArr = handleServiceUrl(appList);
+        console.log(serviceArr, "serviceArr");
         // 删除当前路径下所有文件(除了ignore中包含的文件)，删除缓存文件，每次使用最新
         delDir(path.resolve(outputPath || +__dirname, "./swagger2ts"), {
             deleteCurrPath: false,

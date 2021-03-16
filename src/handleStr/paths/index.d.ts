@@ -1,6 +1,7 @@
 export type Methods = "get" | "post" | "delete" | "put";
 
 interface IData {
+    parameters: any;
     responses: {
         200: {
             description: string;

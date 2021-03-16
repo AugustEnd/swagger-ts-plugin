@@ -1,8 +1,10 @@
 import { handleSpecialSymbol } from "../../utils/common";
-const fs = require("fs");
+import * as fs from "fs";
 
 // 类型
 import { JavaType, IAllInterface } from "./index.d";
+import { IServiceProps } from "../../index.d";
+import { IEurekaBack, IEurekaItem } from "../../http/index.d";
 /**
  * 映射后端语言类型与ts类型
  * @param param0
@@ -137,28 +139,38 @@ export const completeInterfaceAll = async (
     } catch (error) {}
 };
 
-// const apiFileInfo = (paths)=>{
-
-// }
+// 处理 serverList中只传服务地址的情况
 
 export const handleServiceUrl = (
-    appList: Array<any>,
-    serverList: Array<string>
-): Array<{ serviceName: string; serviceUrl: string }> => {
+    appList: Array<IEurekaBack>
+): Array<IServiceProps> => {
+    let { serverList } = global.options;
+    // 保存，存在服务ip的数据
+    let arrFilter = serverList.filter(
+        (el) => typeof el !== "string"
+    ) as Array<IServiceProps>;
+
+    serverList = serverList.filter((el) => typeof el === "string");
+
     let mySet = new Set(serverList);
     return appList
         .filter((el) => {
-            if (
-                Reflect.apply(Object.prototype.toString, [], el.instance) ===
-                    "[object Array]" &&
-                el.instance.length > 0
-            ) {
+            if (Array.isArray(el.instance) && el.instance.length > 0) {
                 el.instance = el.instance[0];
             }
+            el.instance = el.instance as IEurekaItem;
             return mySet.has(el.instance.vipAddress);
         })
-        .map((el) => ({
-            serviceName: el.instance.vipAddress,
-            serviceUrl: el.instance.homePageUrl,
-        }));
+        .map((el) => {
+            if (Array.isArray(el.instance) && el.instance.length > 0) {
+                el.instance = el.instance[0];
+            }
+            el.instance = el.instance as IEurekaItem;
+
+            return {
+                serviceName: el.instance.vipAddress,
+                serviceUrl: el.instance.homePageUrl,
+            };
+        })
+        .concat(arrFilter);
 };

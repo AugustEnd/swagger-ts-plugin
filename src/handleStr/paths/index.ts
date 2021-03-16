@@ -1,6 +1,7 @@
 import { handleSpecialSymbol } from "../../utils/common";
 const fs = require("fs");
-import { IPaths, Methods } from "./index.d";
+import { Methods } from "../../index.d";
+import { IDocPaths } from "../../http/index.d";
 import { IAllInterface } from "../interface/index.d";
 /**
  * 拼接接口字符串
@@ -19,7 +20,7 @@ import { IAllInterface } from "../interface/index.d";
  * @param key
  * @param val
  */
-export const completePath = (key: string, val: IPaths["any"]) => {
+export const completePath = (key: string, val: IDocPaths["any"]) => {
     let str = "";
     let importName = "";
     let method: Methods;

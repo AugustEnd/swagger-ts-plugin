@@ -1,11 +1,8 @@
-const http = require("http");
-const parser = require("fast-xml-parser");
-interface IProps {
-    serviceName: string;
-    serviceUrl: string;
-}
+import * as http from "http";
+// 类型
+import { IServiceProps } from "../index.d";
 
-const getApiVersion = async ({ serviceName, serviceUrl }: IProps) => {
+const getApiVersion = async ({ serviceName, serviceUrl }: IServiceProps) => {
     // 获取接口版本
     const msg = (await new Promise((resolve, reject) => {
         http.get(`${serviceUrl}/swagger-resources`, (val: any) => {
@@ -32,7 +29,7 @@ const getApiVersion = async ({ serviceName, serviceUrl }: IProps) => {
     });
 };
 
-interface IData extends IProps {
+interface IData extends IServiceProps {
     path: string;
 }
 
@@ -75,7 +72,7 @@ const getData = async ({ serviceName, serviceUrl, path }: IData) => {
 export const getSimpleServiceData = async ({
     serviceName,
     serviceUrl,
-}: IProps) => {
+}: IServiceProps) => {
     try {
         const apiPath = (await getApiVersion({
             serviceName,
@@ -95,36 +92,4 @@ export const getSimpleServiceData = async ({
             return null;
         }
     } catch (error) {}
-};
-
-/**
- * 获取所有服务
- * @param param0
- */
-export const getAllServiceList = async ({ url }: { url: string }) => {
-    const msg = (await new Promise((resolve, reject) => {
-        http.get(url, (val: any) => {
-            resolve(val);
-        });
-    })) as any;
-
-    msg.setEncoding("utf8");
-
-    let rawData = "";
-
-    msg.on("data", (chunk: any) => {
-        rawData += chunk;
-    });
-
-    return await new Promise((resolve, reject) => {
-        msg.on("end", () => {
-            try {
-                resolve({
-                    data: parser.parse(rawData).applications.application || [],
-                });
-            } catch (e) {
-                reject(e.message);
-            }
-        });
-    });
 };
