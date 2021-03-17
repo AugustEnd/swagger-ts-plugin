@@ -15,7 +15,7 @@ import {
     collectChinese,
     translateAndChangeChinese,
     exchangeZhToEn,
-} from "../server/helper";
+} from "./helper";
 // 翻译
 import { getTranslateInfo } from "../translation/index";
 
@@ -29,12 +29,16 @@ export async function startCreate(options: ISwaggerProps) {
     if (serverList.length === 0) return;
     try {
         let values = await getData();
+
         //收集所有中文
         let chineseList = collectChinese(values);
+
+        // console.log(chineseList, "chineseList");
         // 拿到所有中英文映射对象
-        let translateJson = await getTranslateInfo(chineseList, options);
+        let translateJson = await getTranslateInfo(chineseList);
         // 把values对象中所有中文字段转换成英文
-        translateAndChangeChinese(values, translateJson);
+        translateAndChangeChinese(values);
+
         // 输出到swagger2ts文件夹中
         const paths = await Promise.all(
             values.map(async (el) => {
@@ -42,14 +46,18 @@ export async function startCreate(options: ISwaggerProps) {
                     // 所有定义
                     await completeInterfaceAll(el, {
                         name: el.serviceName,
-                        path: path.resolve(
+                        rootPath: path.resolve(
                             outputPath || +__dirname,
                             "./swagger2ts"
                         ),
                     });
+                    // console.log(
+                    //     Object.keys(el.data),
+                    //     Object.keys(el.data).length
+                    // );
                     await completePathAll(el.paths, {
                         name: el.serviceName,
-                        path: path.resolve(
+                        rootPath: path.resolve(
                             outputPath || +__dirname,
                             "./swagger2ts"
                         ),

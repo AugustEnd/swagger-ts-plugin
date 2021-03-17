@@ -2,9 +2,11 @@ import { handleSpecialSymbol } from "../../utils/common";
 import * as fs from "fs";
 
 // 类型
-import { JavaType, IAllInterface } from "./index.d";
+import { IAllInterface } from "./index.d";
+import { JavaType } from "../../index.d";
 import { IServiceProps } from "../../index.d";
 import { IEurekaBack, IEurekaItem } from "../../http/index.d";
+import { unlink } from "node:fs";
 /**
  * 映射后端语言类型与ts类型
  * @param param0
@@ -21,13 +23,23 @@ export const typeMap = (
         items?: any;
         $ref?: string;
     },
-    use?: "strict"
+    use?: "strict",
+    fn?: (name: string) => void
 ): string => {
     const childProps =
-        (items?.type && typeMap(items, "strict")) ||
+        (items?.type && typeMap(items, "strict", fn)) ||
         items?.$ref?.split("/")[2] ||
         $ref?.split("/")[2] ||
         null;
+    return switchType(type, childProps, use, fn);
+};
+
+export const switchType = (
+    type: JavaType,
+    childProps: unknown,
+    use: "strict",
+    fn?: (name: string) => void
+) => {
     switch (type) {
         case "string":
             return use === "strict" ? "string" : "string | null";
@@ -37,14 +49,20 @@ export const typeMap = (
             return use === "strict" ? "number" : "number | null";
         case "boolean":
             return use === "strict" ? "boolean" : "boolean | null";
+        case "file":
+            return use === "strict" ? "FormData" : "FormData | null";
         case "array":
+            let name = handleSpecialSymbol(childProps);
+            fn && fn(name);
             return use === "strict"
-                ? `Array<${handleSpecialSymbol(childProps)}>`
-                : `Array<${handleSpecialSymbol(childProps)}> | null`;
+                ? `Array<${name}>`
+                : `Array<${name}> | null`;
         case "object":
             return `any`;
         default:
-            return handleSpecialSymbol(childProps) || "any";
+            let nameDefault = handleSpecialSymbol(childProps);
+            fn && fn(nameDefault);
+            return nameDefault || "any";
     }
 };
 
@@ -89,7 +107,7 @@ export const completeInterface = (key: string, val: any) => {
         noteStr = noteConcat({ key: keyName, val: propsVal }, noteStr);
         tsStr = tsConcat({ key: keyName, val: propsVal }, tsStr);
     }
-
+    // console.log(key);
     return `/**${noteStr}\n */ \nexport interface ${handleSpecialSymbol(
         key
     )} {${tsStr}\n}
@@ -106,20 +124,21 @@ export const completeInterfaceAll = async (
     options?: IAllInterface["options"]
 ) => {
     let newOptions = {
-        path: "./",
+        rootPath: "./",
         name: "name",
         ...(options || {}),
     };
 
     let str = "";
     for (let key in interfaceObj.data) {
+        // console.log(key, "key");
         str += completeInterface(key, interfaceObj.data[key]) + "\n";
     }
 
     try {
         await new Promise((resolve, reject) => {
             fs.mkdir(
-                [newOptions.path, newOptions.name].join("/"),
+                [newOptions.rootPath, newOptions.name].join("/"),
                 { recursive: true },
                 (err: any) => {
                     if (!err) {
@@ -132,7 +151,7 @@ export const completeInterfaceAll = async (
         });
 
         fs.writeFile(
-            [newOptions.path, newOptions.name, "interface.d.ts"].join("/"),
+            [newOptions.rootPath, newOptions.name, "interface.d.ts"].join("/"),
             str,
             () => {}
         );

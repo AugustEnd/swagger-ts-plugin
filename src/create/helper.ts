@@ -1,6 +1,8 @@
 const path = require("path");
 //类型
-import { IPaths, Methods } from "../handleStr/paths/index.d";
+import { Methods } from "../index.d";
+import { IDocBack } from "../http/index.d";
+import { handleSpecialSymbol } from "../utils/common";
 
 /**
  * 收集所有中文列表
@@ -10,7 +12,9 @@ export const collectChinese = (values: any): Array<string> => {
     let chineseSet = new Set();
     values.map((item: any) => {
         for (let key in item?.data) {
-            let all = [...key.matchAll(/[\u4e00-\u9fa5]+/g)].map((el) => el[0]);
+            let all = [
+                ...handleSpecialSymbol(key).matchAll(/[\u4e00-\u9fa5]+/g),
+            ].map((el) => el[0]);
             all.map((el) => chineseSet.add(el));
         }
         for (let key in item?.paths) {
@@ -37,9 +41,9 @@ export const collectChinese = (values: any): Array<string> => {
                             : "";
                     }
                 }
-                let all = [...dto.matchAll(/[\u4e00-\u9fa5]+/g)].map(
-                    (el) => el[0]
-                );
+                let all = [
+                    ...handleSpecialSymbol(dto).matchAll(/[\u4e00-\u9fa5]+/g),
+                ].map((el) => el[0]);
                 all.map((el) => chineseSet.add(el));
             }
         }
@@ -47,28 +51,23 @@ export const collectChinese = (values: any): Array<string> => {
     return Array.from(chineseSet.values()) as Array<string>;
 };
 
-export const translateAndChangeChinese = (values: any, zhToEnMap: any) => {
+export const translateAndChangeChinese = (values: any) => {
     values.map((item: any) => {
         for (let key in item?.data) {
-            let replaceStr = exchangeZhToEn(key, zhToEnMap);
+            let newKey = handleSpecialSymbol(key);
+            let replaceStr = exchangeZhToEn(newKey);
             if (item.data[key].properties) {
                 for (let key2 in item.data[key].properties) {
                     //
-                    let replaceStr2 = exchangeZhToEn(key2, zhToEnMap);
+                    let replaceStr2 = exchangeZhToEn(key2);
                     let result = item.data[key].properties[key2];
                     if (result.$ref) {
-                        result.$ref = exchangeZhToEn(
-                            result.$ref,
-                            zhToEnMap
-                        ).str;
+                        result.$ref = exchangeZhToEn(result.$ref).str;
                     }
                     if (result?.items?.$ref) {
                         item.data[key].properties[
                             key2
-                        ].items.$ref = exchangeZhToEn(
-                            result.items.$ref,
-                            zhToEnMap
-                        ).str;
+                        ].items.$ref = exchangeZhToEn(result.items.$ref).str;
                     }
                     if (replaceStr2.hasZh) {
                         item.data[key].properties[replaceStr2.str] = result;
@@ -97,16 +96,14 @@ export const translateAndChangeChinese = (values: any, zhToEnMap: any) => {
                 ) {
                     if (result.responses[200].schema.$ref) {
                         result.responses[200].schema.$ref = exchangeZhToEn(
-                            result.responses[200].schema.$ref,
-                            zhToEnMap
+                            result.responses[200].schema.$ref
                         ).str;
                     }
                     if (result.responses[200].schema.items) {
                         val[
                             method
                         ].responses[200].schema.items.$ref = exchangeZhToEn(
-                            result.responses[200].schema.items.$ref,
-                            zhToEnMap
+                            result.responses[200].schema.items.$ref
                         ).str;
                     }
                 }
@@ -123,7 +120,8 @@ export const translateAndChangeChinese = (values: any, zhToEnMap: any) => {
  * @param str 待修改的字符串
  * @param zhToEnMap 中英文映射对象
  */
-export const exchangeZhToEn = (str: string, zhToEnMap: any) => {
+export const exchangeZhToEn = (str: string) => {
+    const zhToEnMap = global.swagger2global.transitions;
     if (typeof str !== "string")
         return {
             hasZh: false,

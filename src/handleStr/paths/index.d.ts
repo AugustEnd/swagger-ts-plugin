@@ -1,24 +1,10 @@
-export type Methods = "get" | "post" | "delete" | "put";
-
-interface IData {
-    parameters: any;
-    responses: {
-        200: {
-            description: string;
-            schema?: {
-                $ref?: string;
-                type?: string;
-                items?: {
-                    $ref?: string;
-                };
-            };
-        };
+export interface requestBack {
+    query?: {
+        [key: string]: string | boolean;
     };
-    summary: string;
+    paths?: {
+        [key: string]: string | boolean;
+    };
+    formData?: FormData;
+    body?: unknown;
 }
-
-export type MethodInfo = Record<Methods, IData>;
-
-export type IPaths = {
-    [key: string]: MethodInfo;
-};

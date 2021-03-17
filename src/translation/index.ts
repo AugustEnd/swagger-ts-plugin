@@ -4,23 +4,22 @@ const fs = require("fs");
 const md5 = require("md5");
 const paths = require("path");
 import { handleSpecialSymbol } from "../utils/common";
-import { ISwaggerProps } from "../server/index.d";
 import { ParamsBaidu } from "./index.d";
+import { ISwaggerProps } from "../index.d";
 
 /**
  * 获取中文转英文翻译
  * @param values
  */
 
-export async function getTranslateInfo(
-    values: Array<string>,
-    options: ISwaggerProps
-) {
+export async function getTranslateInfo(values: Array<string>) {
+    const { options } = global;
     let translationObj: { [key: string]: any } = getTranslateJson(
         paths.resolve(options.outputPath, "swagger2ts/translation.json")
     );
     // 过滤掉已翻译的
     values = values.filter((el) => !translationObj.hasOwnProperty(el));
+    // console.log(values, "values");
     const { maxLimit, appid, secretKey } = options?.fanyi?.baidu;
     let qList = splitArray(values, maxLimit);
     let salt = Math.floor(Math.random() * 1e10);
@@ -114,6 +113,9 @@ export async function getTranslateInfo(
             );
         });
     }
+    global.swagger2global = {
+        transitions: translationObj || {},
+    };
     return translationObj;
 }
 

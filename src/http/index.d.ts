@@ -1,3 +1,4 @@
+import { type } from "node:os";
 import { JavaType, Methods } from "../index.d";
 export interface IEurekaItem {
     instanceId: string;
@@ -36,31 +37,45 @@ export interface IDocDefinitions {
     [key: string]: IDocDefinitionsItem;
 }
 
-export type IDocPaths = Record<
-    Methods,
-    {
-        operationId: string;
-        parameters: Array<{
+export type IDocPathsParamsItem = {
+    description: string;
+    in: "header" | "body" | "query" | "formData" | "path";
+    name: string;
+    required: boolean;
+    type?: "string" | "file" | "boolean" | undefined;
+    schema?: {
+        $ref?: string;
+        type?: "object" | "array";
+        items?: {
+            $ref?: string;
+            type?: string;
+        };
+    };
+};
+
+export type IDocPathsParams = {
+    operationId: string;
+    parameters: Array<IDocPathsParamsItem>;
+    responses: {
+        200: {
             description: string;
-            in: "header" | "body" | "query" | "formData";
-            name: string;
-            required: boolean;
-            type?: "string" | "file" | undefined;
             schema?: {
                 $ref?: string;
-                type?: "object" | "array";
-                items?:
-                    | {
-                          $ref: string;
-                      }
-                    | { type: string };
+                type?: string;
+                items?: {
+                    $ref?: string;
+                };
             };
-        }>;
-    }
->;
+        };
+    };
+};
+
+export type IDocPaths = Record<Methods, IDocPathsParams>;
 
 export interface IDocBack {
     data: IDocDefinitions;
     serviceName: string;
-    paths: IDocPaths;
+    paths: {
+        [key: string]: IDocPaths;
+    };
 }

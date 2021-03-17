@@ -1,3 +1,5 @@
+import { IDocBack } from "../../http/index.d";
+
 export type JavaType =
     | "array"
     | "boolean"
@@ -8,13 +10,9 @@ export type JavaType =
     | undefined;
 
 export interface IAllInterface {
-    interfaceObj: {
-        data: { [key: string]: any };
-        serviceName: string;
-        paths: { [key: string]: any };
-    };
+    interfaceObj: IDocBack;
     options?: {
-        path?: string;
+        rootPath?: string;
         name?: string;
     };
 }

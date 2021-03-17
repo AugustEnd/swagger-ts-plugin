@@ -41,6 +41,11 @@ declare global {
     namespace NodeJS {
         interface Global {
             options: ISwaggerProps;
+            swagger2global: {
+                transitions: {
+                    [key: string]: string;
+                };
+            };
         }
     }
 }
@@ -53,6 +58,7 @@ export type JavaType =
     | "integer"
     | "number"
     | "object"
+    | "file"
     | undefined;
 
 //请求方式
