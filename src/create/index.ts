@@ -5,7 +5,6 @@ import {
     handleServiceUrl,
 } from "../handleStr/interface/index";
 
-import { getSimpleServiceData } from "../utils/request";
 import { delDir } from "../utils/common";
 import { completePathAll } from "../handleStr/paths/index";
 

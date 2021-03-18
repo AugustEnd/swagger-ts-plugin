@@ -5,6 +5,7 @@ import completeServiceList from "./serviceInfo";
 // 类型
 import { IServiceProps, IServiceApiDocProps } from "../index.d";
 import { IDocBack } from "./index.d";
+import { resolve } from "node:path";
 
 export const getData = async () => {
     const { apiDocList } = global.options;
@@ -13,13 +14,19 @@ export const getData = async () => {
         // 已获取到所有服务数据
         let values: Array<IDocBack> = [];
         if (apiDocList?.length !== 0) {
-            values = await Promise.all(
-                apiDocList.map((item) => getSimpleServiceDataByApiDocUrl(item))
-            );
+            values = (
+                await Promise.all(
+                    apiDocList.map((item) =>
+                        getSimpleServiceDataByApiDocUrl(item)
+                    )
+                )
+            ).filter((el) => el);
         } else {
-            values = await Promise.all(
-                serviceArr.map((item) => getSimpleServiceDataByIp(item))
-            );
+            values = (
+                await Promise.all(
+                    serviceArr.map((item) => getSimpleServiceDataByIp(item))
+                )
+            ).filter((el) => el);
         }
 
         fs.writeFile(
@@ -42,10 +49,14 @@ export const addParmas = async ({
         serviceName,
         serviceUrl,
     });
-    return Promise.resolve({
-        serviceName,
-        serviceApiDoc: serviceUrl + apiPath,
-    });
+    return Promise.resolve(
+        apiPath
+            ? {
+                  serviceName,
+                  serviceApiDoc: serviceUrl + apiPath,
+              }
+            : null
+    );
 };
 
 export const getSimpleServiceDataByIp = async ({
@@ -54,8 +65,18 @@ export const getSimpleServiceDataByIp = async ({
 }: IServiceProps): Promise<IDocBack> => {
     let serviceApiDocUrl;
     try {
-        let { serviceApiDoc } = await addParmas({ serviceName, serviceUrl });
+        let p = await addParmas({ serviceName, serviceUrl });
+        if (!p) return Promise.resolve(null);
+        const { serviceApiDoc } = p;
         serviceApiDocUrl = serviceApiDoc;
+        if (
+            !global.options.apiDocList.some(
+                (el) => el.serviceName === serviceName
+            )
+        ) {
+            global.options.apiDocList.push({ serviceName, serviceApiDoc });
+        }
+
         return getSimpleData({
             serviceName,
             serviceApiDoc,
@@ -97,29 +118,36 @@ const getApiVersion = async ({
     serviceUrl,
 }: IServiceProps): Promise<string> => {
     // 获取接口版本
-    const msg = (await new Promise((resolve, reject) => {
-        http.get(`${serviceUrl}/swagger-resources`, (val: any) => {
-            resolve(val);
+    try {
+        const msg = (await new Promise((resolve, reject) => {
+            http.get(`${serviceUrl}/swagger-resources`, (val: any) => {
+                if (val.statusCode !== 200) {
+                    reject(null);
+                }
+                resolve(val);
+            });
+        })) as any;
+
+        msg.setEncoding("utf8");
+
+        let rawData = "";
+
+        msg.on("data", (chunk: any) => {
+            rawData += chunk;
         });
-    })) as any;
 
-    msg.setEncoding("utf8");
-
-    let rawData = "";
-
-    msg.on("data", (chunk: any) => {
-        rawData += chunk;
-    });
-
-    return await new Promise((resolve, reject) => {
-        msg.on("end", () => {
-            try {
-                resolve(JSON.parse(rawData)[0].location?.slice(1));
-            } catch (e) {
-                reject(e.message);
-            }
+        return await new Promise((resolve, reject) => {
+            msg.on("end", () => {
+                try {
+                    resolve(JSON.parse(rawData)[0].location?.slice(1));
+                } catch (e) {
+                    reject(e.message);
+                }
+            });
         });
-    });
+    } catch (error) {
+        return Promise.resolve(null);
+    }
 };
 
 interface ISimpleData extends Omit<IServiceProps, "serviceUrl"> {
@@ -129,32 +157,41 @@ const getSimpleData = async ({
     serviceName,
     serviceApiDoc,
 }: ISimpleData): Promise<IDocBack> => {
-    const msg = (await new Promise((resolve, reject) => {
-        http.get(serviceApiDoc, (val: any) => {
-            resolve(val);
+    try {
+        let msg = (await new Promise((resolve, reject) => {
+            http.get(serviceApiDoc, (val: any) => {
+                if (val.statusCode !== 200) {
+                    console.log(1);
+                    reject(null);
+                }
+                resolve(val);
+            });
+        })) as any;
+
+        msg.setEncoding("utf8");
+
+        let rawData = "";
+
+        msg.on("data", (chunk: any) => {
+            rawData += chunk;
         });
-    })) as any;
-
-    msg.setEncoding("utf8");
-
-    let rawData = "";
-
-    msg.on("data", (chunk: any) => {
-        rawData += chunk;
-    });
-
-    return new Promise((resolve, reject) => {
-        msg.on("end", () => {
-            try {
-                const data = JSON.parse(rawData);
-                resolve({
-                    data: data.definitions,
-                    serviceName,
-                    paths: data.paths,
-                });
-            } catch (e) {
-                reject(e.message);
-            }
+        return new Promise((resolve, reject) => {
+            msg.on("end", () => {
+                try {
+                    const data = JSON.parse(rawData);
+                    resolve({
+                        data: data.definitions,
+                        serviceName,
+                        paths: data.paths,
+                    });
+                } catch (e) {
+                    console.log("error");
+                    reject(e.message);
+                }
+            });
         });
-    });
+    } catch (error) {
+        console.log(error, "error");
+        return Promise.resolve(null);
+    }
 };

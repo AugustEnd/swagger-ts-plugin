@@ -2,6 +2,7 @@ import { handleSpecialSymbol } from "../../utils/common";
 import * as fs from "fs";
 import { typeMap, switchType } from "../interface";
 import { exchangeZhToEn } from "../../create/helper";
+import { outputApi } from "../createFn/index";
 // 类型
 import { Methods } from "../../index.d";
 import {
@@ -11,8 +12,8 @@ import {
     IDocBack,
 } from "../../http/index.d";
 import { IAllInterface } from "../interface/index.d";
-import { requestBack } from "./index.d";
-import { buildFn } from "../createFn";
+import { CompletePathBack } from "./index.d";
+import { currentServiceFn } from "../createFn";
 /**
  * 拼接接口字符串
  * @param param0
@@ -30,14 +31,12 @@ import { buildFn } from "../createFn";
  * @param key
  * @param val
  */
-export const completePath = (key: string, val: IDocPaths) => {
+export const completePath = (key: string, val: IDocPaths): CompletePathBack => {
     let str = "";
 
-    let method: string = Object.keys(val)[0];
+    let method = Object.keys(val)[0] as Methods;
 
-    let newMethod = method as Methods;
-
-    const { parameters, responses, operationId } = val[newMethod];
+    const { parameters, responses, operationId } = val[method];
     // 出参
     let { name, type } = responseType(responses);
     let importName = name;
@@ -48,6 +47,7 @@ export const completePath = (key: string, val: IDocPaths) => {
     str = `    "${key}": {
         method: "${method}";
         parameters:${paramObj.params},
+        paramsList:${JSON.stringify(paramObj.reqType)}
         operationId:"${operationId}",
         data: ${
             type === "array"
@@ -59,13 +59,14 @@ export const completePath = (key: string, val: IDocPaths) => {
     };`;
 
     importName && importNames.push(handleSpecialSymbol(importName));
-    console.log(key, "key");
+
     return {
         str,
         method,
         url: key,
         requestImportNames: importNames,
         parameters: paramObj.params,
+        reqType: paramObj.reqType,
         backParams:
             type === "array"
                 ? `Array<${importName ? importName : null}>`
@@ -96,43 +97,34 @@ export const completePathAll = async (
     };
 
     let str = "";
-    let fnStr = "";
     let importSet = new Set();
+    let pathInfoList = [];
     for (let key in paths) {
         let onePath = completePath(key, paths[key]);
         onePath.importName.map(
             (el) => el && importSet.add(exchangeZhToEn(el).str)
         );
+        pathInfoList.push(onePath);
         str += onePath.str + "\n";
-        onePath.operationId === "downloadByFileIdUsingGET_1" &&
-            (fnStr += buildFn({
-                operationId: onePath.operationId,
-                method: onePath.method as Methods,
-                requestImportNames: onePath.requestImportNames,
-                responseImportNames: onePath.responseImportNames,
-                parameters: onePath.parameters,
-                url: onePath.url,
-                backParams: onePath.backParams,
-            }));
     }
-    str = `import {${Array.from(importSet.values()).join(
-        ","
-    )}} from './interface.d';
+    let importList = Array.from(importSet.values()) as Array<string>;
+    str = `import {${importList.join(",")}} from './interface.d';
 export interface pathsObj {\n${str}}`;
 
-    fnStr = `import {${Array.from(importSet.values()).join(
-        ","
-    )}} from './interface.d';
-    import tmsRequest, { TmsAxiosInterface } from 'tms-request';
+    // 当前服务所有请求函数
+    let fnStr = currentServiceFn(
+        pathInfoList as Array<
+            Omit<
+                CompletePathBack,
+                | "importName"
+                | "str"
+                | "requestImportNames"
+                | "responseImportNames"
+            >
+        >,
+        importList
+    );
 
-type ResetTmsAxiosInterface = Required<TmsAxiosInterface>;
-
-const newReq = tmsRequest as ResetTmsAxiosInterface;
-
-let http = newReq.create({
-    timeout: 500000,
-});
-    ${fnStr}`;
     try {
         await new Promise((resolve, reject) => {
             fs.mkdir(
@@ -148,16 +140,34 @@ let http = newReq.create({
             );
         });
 
-        fs.writeFile(
-            [newOptions.rootPath, newOptions.name, "paths.ts"].join("/"),
-            str,
-            () => {}
-        );
-        fs.writeFile(
-            [newOptions.rootPath, newOptions.name, "function.ts"].join("/"),
-            fnStr,
-            () => {}
-        );
+        await Promise.all([
+            new Promise((resolve, reject) => {
+                fs.writeFile(
+                    [newOptions.rootPath, newOptions.name, "paths.ts"].join(
+                        "/"
+                    ),
+                    str,
+                    (err) => {
+                        if (err) reject(err);
+                        resolve(null);
+                    }
+                );
+            }),
+            new Promise((resolve, reject) => {
+                fs.writeFile(
+                    [newOptions.rootPath, newOptions.name, "function.ts"].join(
+                        "/"
+                    ),
+                    fnStr,
+                    (err) => {
+                        if (err) reject(err);
+                        resolve(null);
+                    }
+                );
+            }),
+        ]);
+        console.log("over", global.options.apiDocList, "--");
+        outputApi();
     } catch (error) {}
 };
 
@@ -193,7 +203,11 @@ export const responseType = (
 
 export const requestType = (
     parameters: IDocPathsParams["parameters"]
-): { params: string; importNames: Array<string> } => {
+): {
+    params: string;
+    importNames: Array<string>;
+    reqType: Record<"query" | "body" | "formData" | "path", boolean>;
+} => {
     // 上传文件
     let formData = parameters.filter((el) => el.in === "formData");
     // 请求body
@@ -248,20 +262,38 @@ export const requestType = (
     }, "");
 
     let formDataStr = formData.reduce(
-        (a: string, b: IDocPathsParamsItem) => `: FormData;\n`,
+        (a: string, b: IDocPathsParamsItem) => `FormData;\n`,
         ""
     );
     return {
-        params: `{${`
-            query${!queryStr ? "?" : ""}:{
-                ${queryStr || "[key:string]:string"}
-            };`}${`
-            path${!pathStr ? "?" : ""}:{
-                ${pathStr || "[key:string]:string"}
-            }`}${`
-            body${!bodyStr ? "?" : ""}:${bodyStr || "{[key:string]:string}"}
-            `}${`formData${!formDataStr && "?"}:${formDataStr || "null"}`}
+        params: `{${
+            queryStr
+                ? `
+            query:{
+                ${queryStr}
+            };`
+                : ""
+        }${
+            pathStr
+                ? `
+            path:{
+                ${pathStr}
+            }`
+                : ""
+        }${
+            bodyStr
+                ? `
+            body:${bodyStr}
+            `
+                : ""
+        }${formDataStr ? `formData: ${formDataStr}` : ""}
         }`,
+        reqType: {
+            query: !!queryStr,
+            path: !!pathStr,
+            body: !!bodyStr,
+            formData: !!formDataStr,
+        },
         importNames: Array.from(collectNames.values()) as string[],
     };
 };
