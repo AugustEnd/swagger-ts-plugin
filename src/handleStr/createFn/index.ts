@@ -62,27 +62,18 @@ export const currentServiceFn = (
     list: Array<IBuildFnProps>,
     importList: Array<string>
 ): string => {
-    let fnIds: Array<string> = [];
+    let fnIds: Array<{ operationId: string; url: string }> = [];
     // 路由和operationId映射；
     let urlToIdmaps: { [key: string]: string } = {};
 
     let str = list.reduce((prev, next) => {
         let { fnStr, operationId, url } = buildFn(next);
-        fnIds.push(operationId);
+        fnIds.push({ operationId, url });
         urlToIdmaps[operationId] = url;
         return (prev += fnStr);
     }, "");
 
     return `import {${importList.join(",")}} from './interface.d';
-        import tmsRequest, { TmsAxiosInterface } from 'tms-request';
-
-    type ResetTmsAxiosInterface = Required<TmsAxiosInterface>;
-
-    const newReq = tmsRequest as ResetTmsAxiosInterface;
-
-    let http = newReq.create({
-        timeout: 500000,
-    });
 
     // 把动态路由加入到url中
     const pathAddToUrl = (url: string, pathObj: any): string => {
@@ -97,53 +88,69 @@ export const currentServiceFn = (
             url
         );
     };
-    ${str} ${exportMaps(urlToIdmaps)} ${exportFn(fnIds)}`;
+    
+    ${str}
+    ${export__switchMaps(urlToIdmaps)}
+    ${exportMaps(urlToIdmaps)} ${exportFn(fnIds)}`;
+};
+
+export const export__switchMaps = (obj: any) => {
+    return `export interface __switchMaps {${Object.keys(obj).reduce(
+        (prev, next) => (prev += `"${obj[next]}": typeof ${next};`),
+        ""
+    )}}`;
 };
 
 export const exportMaps = (obj: any) => {
-    return `export const urlMaps = ${JSON.stringify(obj)}\n`;
+    return `export const __urlMaps = ${JSON.stringify(obj)}\n`;
 };
 
-export const exportFn = (ids: Array<string>): string => {
+export const exportFn = (
+    ids: Array<{ operationId: string; url: string }>
+): string => {
     global.options.outputPath;
     return `export default {
-        ${ids.join(",")}
+        ${ids.reduce((prev, next) => {
+            // 使用id作为标识
+            // return prev ? prev + ", " + next.operationId : next.operationId;
+            // 使用url作为标识
+            return prev
+                ? `${prev}, "${next.url}":${next.operationId}`
+                : `"${next.url}":${next.operationId}`;
+        }, "")}
     }`;
 };
 
 export const exportApi = () => {
+    let list = global.options.apiDocList;
     return `${getApiImport()}
-let a = {
-    saveUploadFileInfoUsingPOST_1: "/sds/sdf/{sd}",
-};
-
 interface APIType {
-    fsService: {
-        "/sds/sdf/{sd}": typeof fsService.saveUploadFileInfoUsingPOST_1;
-    };
+    ${list.reduce(
+        (prev, next) =>
+            (prev += `${humpName(next.serviceName)}: typeof ${humpName(
+                next.serviceName
+            )};\n`),
+        ""
+    )}
 }
-
-let APIs: APIType = {
-    fsService: {
-        ["/sds/sdf/{sd}"]:
-            fsService.saveUploadFileInfoUsingPOST_1,
-    },
-};
-
-APIs.fsService["/sds/sdf/{sd}"]
-
-function API<T>(this: any, http: T): T & Record<ServiceGather, ServiceType> {
-    type K = T & Record<ServiceGather, ServiceType>;
+type ServiceGather = ${list
+        .map((el) => "'" + humpName(el.serviceName) + "'")
+        .join("|")};
+export default function API<T>(
+    this: any,
+    http: T
+): T &
+    {
+        [U in ServiceGather]: APIType[ServiceGather];
+    } {
+    type K = T &
+        {
+            [U in ServiceGather]: APIType[ServiceGather];
+        };
     let newHttp = http as K;
 
-    let service = {
-        smsService: {
-            //
-            '/sdda/sdf/{dsd}': {},
-        },
-        fsService: {
-            '/sdda/sdf/{dsd}': {},
-        },
+    let service: APIType = {
+        ${list.map((el) => humpName(el.serviceName)).join(",")}
     };
     for (let key in service) {
         newHttp[key as ServiceGather] = service[key as ServiceGather];
@@ -153,15 +160,32 @@ function API<T>(this: any, http: T): T & Record<ServiceGather, ServiceType> {
     `;
 };
 
+// import 所有服务的方法
 export const getApiImport = () => {
     let list = global.options.apiDocList;
     return list.reduce(
         (prev, next) =>
-            (prev += `import ${humpName(
+            (prev += `import ${humpName(next.serviceName)} from './${
                 next.serviceName
-            )}, { urlMaps } from './${next.serviceName}/function';`),
+            }/function';\n`),
         ""
     );
+};
+
+// 定义
+export const interfaceApisType = () => {
+    let list = global.options.apiDocList;
+    const foreachObj = (maps: any, name: string): string => {
+        let objStr = "";
+        for (let key in maps) {
+            objStr += `"${maps[key]}": typeof ${name}.${key};\n`;
+        }
+        return objStr;
+    };
+    return `interface APIServiceType {
+        fsService: {
+            "/sds/sdf/{sd}": typeof fsService.saveUploadFileInfoUsingPOST_1;
+        };`;
 };
 
 export const humpName = (name: string): string => {

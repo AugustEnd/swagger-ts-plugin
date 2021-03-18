@@ -7,7 +7,7 @@ const execute = async () => {
     await startCreate({
         ...defaultValue,
         outputPath: path.resolve(__dirname, "../../"),
-        serverList: ["fs-service"],
+        serverList: ["fs-service", "sms-service", "trialpartner-web"],
         appUrl: "http://eureka.test.com:1111/eureka/apps",
     });
 };
