@@ -20,16 +20,20 @@ const completeServiceList = async () => {
     // 获取所有服务请求前完整信息，包含服务名称和服务ip
     serviceArr = handleServiceUrl(appList);
 
-    // 删除当前路径下所有文件(除了ignore中包含的文件)，删除缓存文件，每次使用最新
-    delDir(paths.resolve(outputPath || (+__dirname as any), "./swagger2ts"), {
-        deleteCurrPath: false,
-        ignore: [
-            paths.resolve(
-                (outputPath || +__dirname) as any,
-                "./swagger2ts/translation.json"
-            ),
-        ],
-    });
+    // // 删除当前路径下所有文件(除了ignore中包含的文件)，删除缓存文件，每次使用最新
+    // delDir(paths.resolve(outputPath || (+__dirname as any), "./swagger2ts"), {
+    //     deleteCurrPath: false,
+    //     ignore: [
+    //         paths.resolve(
+    //             (outputPath || +__dirname) as any,
+    //             "./swagger2ts/translation.json"
+    //         ),
+    //         paths.resolve(
+    //             (outputPath || +__dirname) as any,
+    //             "./swagger2ts/request.ts"
+    //         ),
+    //     ],
+    // });
     return serviceArr;
 };
 

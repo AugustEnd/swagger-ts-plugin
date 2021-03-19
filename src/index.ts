@@ -1,4 +1,4 @@
-import { startCreate } from "./server/index";
+import { startCreate } from "./create/index";
 import defaultValue from "./create/defaultValue";
 import { ISwaggerProps } from "./index.d";
 /**

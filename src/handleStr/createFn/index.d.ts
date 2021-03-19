@@ -6,6 +6,7 @@ export interface IBuildFnProps {
     url: string;
     backParams: string;
     reqType: Record<"query" | "body" | "formData" | "path", boolean>;
+    urlHeader?: string;
 }
 
 export interface IBuildFnBack {

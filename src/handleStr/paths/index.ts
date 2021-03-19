@@ -14,6 +14,8 @@ import {
 import { IAllInterface } from "../interface/index.d";
 import { CompletePathBack } from "./index.d";
 import { currentServiceFn } from "../createFn";
+
+const varType = ["any", "string", "number", "boolean", "undefault", "null"];
 /**
  * 拼接接口字符串
  * @param param0
@@ -40,6 +42,7 @@ export const completePath = (key: string, val: IDocPaths): CompletePathBack => {
     // 出参
     let { name, type } = responseType(responses);
     let importName = name;
+    name && console.log(name);
     // 入参
     let paramObj = requestType(parameters);
     let importNames: Array<string> = paramObj.importNames;
@@ -104,7 +107,7 @@ export const completePathAll = async (
         onePath.importName.map(
             (el) => el && importSet.add(exchangeZhToEn(el).str)
         );
-        pathInfoList.push(onePath);
+        pathInfoList.push({ ...onePath, urlHeader: options?.name });
         str += onePath.str + "\n";
     }
     let importList = Array.from(importSet.values()) as Array<string>;
@@ -250,13 +253,18 @@ export const requestType = (
                 }
             );
             if (b.schema?.type === "array") {
+                let type = b.schema?.items?.$ref
+                    ? exchangeZhToEn(name).str
+                    : b.schema?.items?.type;
+
                 return `Array<${
-                    b.schema?.items?.$ref
-                        ? exchangeZhToEn(name).str
-                        : b.schema?.items?.type
+                    varType.includes(type) ? type : `Partial<${type}>`
                 }>;`;
             } else {
-                return `${exchangeZhToEn(name).str};\n`;
+                let type = exchangeZhToEn(name).str;
+                return `${
+                    varType.includes(type) ? type : `Partial<${type}>`
+                };\n`;
             }
         }
     }, "");

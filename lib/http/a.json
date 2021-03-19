@@ -25324,23 +25324,6 @@
                     }
                 }
             },
-            "ActionResult«fsJsAccesskey»": {
-                "type": "object",
-                "properties": {
-                    "data": {
-                        "$ref": "#/definitions/fsJsAccesskey"
-                    },
-                    "errors": {
-                        "type": "array",
-                        "items": {
-                            "$ref": "#/definitions/ErrorInfo"
-                        }
-                    },
-                    "success": {
-                        "type": "boolean"
-                    }
-                }
-            },
             "ActionResult«int»": {
                 "type": "object",
                 "properties": {
@@ -25961,7 +25944,7 @@
                     },
                     "failCallback": {
                         "type": "string",
-                        "description": "失败回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID, sourceFileId=xx"
+                        "description": "失败回调 http://service-name/*"
                     },
                     "inHurry": {
                         "type": "boolean",
@@ -25970,7 +25953,7 @@
                     },
                     "successCallback": {
                         "type": "string",
-                        "description": "成功回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID与转换之后的pdf文件ID, sourceFileId=xx&pdfFileId=yy"
+                        "description": "成功回调 http://service-name/*"
                     }
                 }
             },
@@ -27708,17 +27691,6 @@
                     }
                 }
             },
-            "fsJsAccesskey": {
-                "type": "object",
-                "properties": {
-                    "fsJsAccesskeyId": {
-                        "type": "string"
-                    },
-                    "fsJsAccesskeySecret": {
-                        "type": "string"
-                    }
-                }
-            },
             "wps文件预览响应": {
                 "type": "object",
                 "properties": {
@@ -28307,226 +28279,6 @@
                     }
                 }
             },
-            "/file": {
-                "post": {
-                    "tags": [
-                        "fs-client-controller"
-                    ],
-                    "summary": "batchUpload",
-                    "operationId": "batchUploadUsingPOST_1",
-                    "consumes": [
-                        "application/json"
-                    ],
-                    "produces": [
-                        "*/*"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "TM-Header-UserId",
-                            "in": "header",
-                            "description": "用户id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserName",
-                            "in": "header",
-                            "description": "用户名",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserIp",
-                            "in": "header",
-                            "description": "客户端ip",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserAgent",
-                            "in": "header",
-                            "description": "客户端代理",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-TenantId",
-                            "in": "header",
-                            "description": "租户id",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Locale",
-                            "in": "header",
-                            "description": "时区",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Token",
-                            "in": "header",
-                            "description": "令牌",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Environment-Token",
-                            "in": "header",
-                            "description": "环境令牌",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-AppId",
-                            "in": "header",
-                            "description": "应用名称",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "appId",
-                            "in": "query",
-                            "description": "应用Id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "tenantId",
-                            "in": "query",
-                            "description": "租户Id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "userId",
-                            "in": "query",
-                            "description": "用户Id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fileId",
-                            "in": "query",
-                            "description": "上传文件Id，如果传了此Id，相同Id的文件会覆盖，比如第一次上传的文件Id为:123,第二次任然为:123 那么在服务端保存文件的时候就是123.文件后缀名\n 在保存用户头像的时候，需要用到这个参数，fileId传用户Id，这样相同用户多次上传头像，就只保存一个文件，减少了服务器空间消耗，注：该字段已经废除",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "processor",
-                            "in": "query",
-                            "description": "文件处理参数：可选参数为image 图片处理，iSpring iSpring课件处理\n 不传此参数时按照默认的文件上传下载处理,cloudStorage处理宝信云文件上传,base64image处理base64图片,resource资源文件上传，例如：视频/音频",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "base64File",
-                            "in": "query",
-                            "description": "Base64image时需要通过本参数传递图片内容",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "base64RFC",
-                            "in": "query",
-                            "description": "Base64编码使用具体协议,default,urlsafe,mime,默认为default",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fileName",
-                            "in": "query",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "tempStorage",
-                            "in": "query",
-                            "description": "文件存储方式，取值方式：0/1，0=临时存储，1=永久存储，注：该字段已经废除",
-                            "required": false,
-                            "type": "integer",
-                            "format": "int32"
-                        },
-                        {
-                            "name": "storageMode",
-                            "in": "query",
-                            "description": "文件存储方式，值方式：tmp/forever，tmp=临时存储，forever=永久存储取",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "contentType",
-                            "in": "query",
-                            "description": "文件content-type http response 设置的内容类型，用于在浏览器中查看'",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "expireTime",
-                            "in": "query",
-                            "description": "文件临时存储过期时间:单位是秒，过期时间从当前创建时间开始计算，如：过期时间=2小时，该值=2*60*60，默认是-1，表示永不过期",
-                            "required": false,
-                            "type": "integer",
-                            "format": "int64"
-                        },
-                        {
-                            "name": "isolationType",
-                            "in": "query",
-                            "description": "隔离级别 项目 应用 租户 示例:全隔离  111  全部不隔离 0   隔离项目和租户  101",
-                            "required": false,
-                            "type": "integer",
-                            "format": "int32"
-                        },
-                        {
-                            "name": "needTransfer",
-                            "in": "query",
-                            "description": "是否需要转化，需要传true，不需要传false或者不传，目前支持转化的源->目标后缀有:.doc,.docx,.xls,.xlsx,.ppt->.pdf | .tif->.jpg",
-                            "required": false,
-                            "type": "boolean"
-                        },
-                        {
-                            "name": "compress",
-                            "in": "query",
-                            "description": "是否需要压缩, 默认不压缩",
-                            "required": false,
-                            "type": "boolean"
-                        },
-                        {
-                            "name": "compressLevel",
-                            "in": "query",
-                            "description": "压缩级别",
-                            "required": false,
-                            "type": "integer",
-                            "format": "int32"
-                        }
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/definitions/ActionResult«List«UploadFileDTO»»"
-                            }
-                        },
-                        "201": {
-                            "description": "Created"
-                        },
-                        "401": {
-                            "description": "Unauthorized"
-                        },
-                        "403": {
-                            "description": "Forbidden"
-                        },
-                        "404": {
-                            "description": "Not Found"
-                        }
-                    }
-                }
-            },
             "/file/baoxinclouddown/{fileId}": {
                 "get": {
                     "tags": [
@@ -28969,6 +28721,226 @@
                     }
                 }
             },
+            "/file/batchUpload": {
+                "post": {
+                    "tags": [
+                        "fs-client-controller"
+                    ],
+                    "summary": "batchUpload",
+                    "operationId": "batchUploadUsingPOST_1",
+                    "consumes": [
+                        "application/json"
+                    ],
+                    "produces": [
+                        "*/*"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "TM-Header-UserId",
+                            "in": "header",
+                            "description": "用户id",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "TM-Header-UserName",
+                            "in": "header",
+                            "description": "用户名",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "TM-Header-UserIp",
+                            "in": "header",
+                            "description": "客户端ip",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "TM-Header-UserAgent",
+                            "in": "header",
+                            "description": "客户端代理",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "TM-Header-TenantId",
+                            "in": "header",
+                            "description": "租户id",
+                            "required": true,
+                            "type": "string",
+                            "default": "027028eb7553472c9d94a650001af23a"
+                        },
+                        {
+                            "name": "TM-Header-Locale",
+                            "in": "header",
+                            "description": "时区",
+                            "required": false,
+                            "type": "string",
+                            "default": "027028eb7553472c9d94a650001af23a"
+                        },
+                        {
+                            "name": "TM-Header-Token",
+                            "in": "header",
+                            "description": "令牌",
+                            "required": true,
+                            "type": "string",
+                            "default": "027028eb7553472c9d94a650001af23a"
+                        },
+                        {
+                            "name": "TM-Header-Environment-Token",
+                            "in": "header",
+                            "description": "环境令牌",
+                            "required": false,
+                            "type": "string",
+                            "default": "027028eb7553472c9d94a650001af23a"
+                        },
+                        {
+                            "name": "TM-Header-AppId",
+                            "in": "header",
+                            "description": "应用名称",
+                            "required": false,
+                            "type": "string",
+                            "default": "027028eb7553472c9d94a650001af23a"
+                        },
+                        {
+                            "name": "appId",
+                            "in": "query",
+                            "description": "应用Id",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "tenantId",
+                            "in": "query",
+                            "description": "租户Id",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "userId",
+                            "in": "query",
+                            "description": "用户Id",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "fileId",
+                            "in": "query",
+                            "description": "上传文件Id，如果传了此Id，相同Id的文件会覆盖，比如第一次上传的文件Id为:123,第二次任然为:123 那么在服务端保存文件的时候就是123.文件后缀名\n 在保存用户头像的时候，需要用到这个参数，fileId传用户Id，这样相同用户多次上传头像，就只保存一个文件，减少了服务器空间消耗，注：该字段已经废除",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "processor",
+                            "in": "query",
+                            "description": "文件处理参数：可选参数为image 图片处理，iSpring iSpring课件处理\n 不传此参数时按照默认的文件上传下载处理,cloudStorage处理宝信云文件上传,base64image处理base64图片,resource资源文件上传，例如：视频/音频",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "base64File",
+                            "in": "query",
+                            "description": "Base64image时需要通过本参数传递图片内容",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "base64RFC",
+                            "in": "query",
+                            "description": "Base64编码使用具体协议,default,urlsafe,mime,默认为default",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "fileName",
+                            "in": "query",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "tempStorage",
+                            "in": "query",
+                            "description": "文件存储方式，取值方式：0/1，0=临时存储，1=永久存储，注：该字段已经废除",
+                            "required": false,
+                            "type": "integer",
+                            "format": "int32"
+                        },
+                        {
+                            "name": "storageMode",
+                            "in": "query",
+                            "description": "文件存储方式，值方式：tmp/forever，tmp=临时存储，forever=永久存储取",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "contentType",
+                            "in": "query",
+                            "description": "文件content-type http response 设置的内容类型，用于在浏览器中查看'",
+                            "required": false,
+                            "type": "string"
+                        },
+                        {
+                            "name": "expireTime",
+                            "in": "query",
+                            "description": "文件临时存储过期时间:单位是秒，过期时间从当前创建时间开始计算，如：过期时间=2小时，该值=2*60*60，默认是-1，表示永不过期",
+                            "required": false,
+                            "type": "integer",
+                            "format": "int64"
+                        },
+                        {
+                            "name": "isolationType",
+                            "in": "query",
+                            "description": "隔离级别 项目 应用 租户 示例:全隔离  111  全部不隔离 0   隔离项目和租户  101",
+                            "required": false,
+                            "type": "integer",
+                            "format": "int32"
+                        },
+                        {
+                            "name": "needTransfer",
+                            "in": "query",
+                            "description": "是否需要转化，需要传true，不需要传false或者不传，目前支持转化的源->目标后缀有:.doc,.docx,.xls,.xlsx,.ppt->.pdf | .tif->.jpg",
+                            "required": false,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "compress",
+                            "in": "query",
+                            "description": "是否需要压缩, 默认不压缩",
+                            "required": false,
+                            "type": "boolean"
+                        },
+                        {
+                            "name": "compressLevel",
+                            "in": "query",
+                            "description": "压缩级别",
+                            "required": false,
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "OK",
+                            "schema": {
+                                "$ref": "#/definitions/ActionResult«List«UploadFileDTO»»"
+                            }
+                        },
+                        "201": {
+                            "description": "Created"
+                        },
+                        "401": {
+                            "description": "Unauthorized"
+                        },
+                        "403": {
+                            "description": "Forbidden"
+                        },
+                        "404": {
+                            "description": "Not Found"
+                        }
+                    }
+                }
+            },
             "/file/bx/sync/getFile": {
                 "get": {
                     "tags": [
@@ -29291,14 +29263,14 @@
                         {
                             "name": "successCallback",
                             "in": "query",
-                            "description": "成功回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID与转换之后的pdf文件ID, sourceFileId=xx&pdfFileId=yy",
+                            "description": "成功回调 http://service-name/*",
                             "required": false,
                             "type": "string"
                         },
                         {
                             "name": "failCallback",
                             "in": "query",
-                            "description": "失败回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID, sourceFileId=xx",
+                            "description": "失败回调 http://service-name/*",
                             "required": false,
                             "type": "string"
                         },
@@ -33063,572 +33035,6 @@
                     "responses": {
                         "200": {
                             "description": "OK"
-                        },
-                        "401": {
-                            "description": "Unauthorized"
-                        },
-                        "403": {
-                            "description": "Forbidden"
-                        },
-                        "404": {
-                            "description": "Not Found"
-                        }
-                    }
-                }
-            },
-            "/file/fsjs/download_fileid/{fileId}": {
-                "get": {
-                    "tags": [
-                        "fs-js-file-controller"
-                    ],
-                    "summary": "文件分片下载",
-                    "operationId": "rangeDownloadByFileIdUsingGET_1",
-                    "consumes": [
-                        "application/json"
-                    ],
-                    "produces": [
-                        "*/*"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "TM-Header-UserId",
-                            "in": "header",
-                            "description": "用户id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserName",
-                            "in": "header",
-                            "description": "用户名",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserIp",
-                            "in": "header",
-                            "description": "客户端ip",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserAgent",
-                            "in": "header",
-                            "description": "客户端代理",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-TenantId",
-                            "in": "header",
-                            "description": "租户id",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Locale",
-                            "in": "header",
-                            "description": "时区",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Token",
-                            "in": "header",
-                            "description": "令牌",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Environment-Token",
-                            "in": "header",
-                            "description": "环境令牌",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-AppId",
-                            "in": "header",
-                            "description": "应用名称",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "fsJsAccesskeyId",
-                            "in": "query",
-                            "description": "fsJsAccessId",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsTstamp",
-                            "in": "query",
-                            "description": "时间戳，如1521513257000",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsNonce",
-                            "in": "query",
-                            "description": "6位随机数",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsVersion",
-                            "in": "query",
-                            "description": "版本号：如1.0",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsSign",
-                            "in": "query",
-                            "description": "验签结果字符串",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fileId",
-                            "in": "path",
-                            "description": "fileId",
-                            "required": true,
-                            "type": "string"
-                        }
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK"
-                        },
-                        "401": {
-                            "description": "Unauthorized"
-                        },
-                        "403": {
-                            "description": "Forbidden"
-                        },
-                        "404": {
-                            "description": "Not Found"
-                        }
-                    }
-                }
-            },
-            "/file/fsjs/generateFsJsAccesskey": {
-                "post": {
-                    "tags": [
-                        "fs-js-file-controller"
-                    ],
-                    "summary": "申请一个fsJsAccesskey，申请方一定要将秘钥保存好，调用接口时签名需用到",
-                    "operationId": "generateFsJsAccesskeyUsingPOST",
-                    "consumes": [
-                        "application/json"
-                    ],
-                    "produces": [
-                        "*/*"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "TM-Header-UserId",
-                            "in": "header",
-                            "description": "用户id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserName",
-                            "in": "header",
-                            "description": "用户名",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserIp",
-                            "in": "header",
-                            "description": "客户端ip",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserAgent",
-                            "in": "header",
-                            "description": "客户端代理",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-TenantId",
-                            "in": "header",
-                            "description": "租户id",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Locale",
-                            "in": "header",
-                            "description": "时区",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Token",
-                            "in": "header",
-                            "description": "令牌",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Environment-Token",
-                            "in": "header",
-                            "description": "环境令牌",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-AppId",
-                            "in": "header",
-                            "description": "应用名称",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        }
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/definitions/ActionResult«fsJsAccesskey»"
-                            }
-                        },
-                        "201": {
-                            "description": "Created"
-                        },
-                        "401": {
-                            "description": "Unauthorized"
-                        },
-                        "403": {
-                            "description": "Forbidden"
-                        },
-                        "404": {
-                            "description": "Not Found"
-                        }
-                    }
-                }
-            },
-            "/file/fsjs/getFile": {
-                "get": {
-                    "tags": [
-                        "fs-js-file-controller"
-                    ],
-                    "summary": "单文件或多文件下载",
-                    "operationId": "getFileUsingGET_1",
-                    "consumes": [
-                        "application/json"
-                    ],
-                    "produces": [
-                        "*/*"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "TM-Header-UserId",
-                            "in": "header",
-                            "description": "用户id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserName",
-                            "in": "header",
-                            "description": "用户名",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserIp",
-                            "in": "header",
-                            "description": "客户端ip",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserAgent",
-                            "in": "header",
-                            "description": "客户端代理",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-TenantId",
-                            "in": "header",
-                            "description": "租户id",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Locale",
-                            "in": "header",
-                            "description": "时区",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Token",
-                            "in": "header",
-                            "description": "令牌",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Environment-Token",
-                            "in": "header",
-                            "description": "环境令牌",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-AppId",
-                            "in": "header",
-                            "description": "应用名称",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "fsJsAccesskeyId",
-                            "in": "query",
-                            "description": "fsJsAccessId",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsTstamp",
-                            "in": "query",
-                            "description": "时间戳，如1521513257000",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsNonce",
-                            "in": "query",
-                            "description": "6位随机数",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsVersion",
-                            "in": "query",
-                            "description": "版本号：如1.0",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsSign",
-                            "in": "query",
-                            "description": "验签结果字符串",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fileId",
-                            "in": "query",
-                            "description": "单个文件的id或者多个文件id，多个文件id之间需要用英文逗号隔开，如：1,2,3",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "zipFileName",
-                            "in": "query",
-                            "description": "多文件时，会被打包为zip，zipFileName用于指定压缩包的名称",
-                            "required": false,
-                            "type": "string"
-                        }
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK"
-                        },
-                        "401": {
-                            "description": "Unauthorized"
-                        },
-                        "403": {
-                            "description": "Forbidden"
-                        },
-                        "404": {
-                            "description": "Not Found"
-                        }
-                    }
-                }
-            },
-            "/file/fsjs/online/previewPage": {
-                "get": {
-                    "tags": [
-                        "fs-js-file-controller"
-                    ],
-                    "summary": "在线协同页面(预览)",
-                    "operationId": "onlinePreviewPageUsingGET",
-                    "consumes": [
-                        "application/json"
-                    ],
-                    "produces": [
-                        "*/*"
-                    ],
-                    "parameters": [
-                        {
-                            "name": "TM-Header-UserId",
-                            "in": "header",
-                            "description": "用户id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserName",
-                            "in": "header",
-                            "description": "用户名",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserIp",
-                            "in": "header",
-                            "description": "客户端ip",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-UserAgent",
-                            "in": "header",
-                            "description": "客户端代理",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "TM-Header-TenantId",
-                            "in": "header",
-                            "description": "租户id",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Locale",
-                            "in": "header",
-                            "description": "时区",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Token",
-                            "in": "header",
-                            "description": "令牌",
-                            "required": true,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-Environment-Token",
-                            "in": "header",
-                            "description": "环境令牌",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "TM-Header-AppId",
-                            "in": "header",
-                            "description": "应用名称",
-                            "required": false,
-                            "type": "string",
-                            "default": "027028eb7553472c9d94a650001af23a"
-                        },
-                        {
-                            "name": "fsJsAccesskeyId",
-                            "in": "query",
-                            "description": "fsJsAccessId",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsTstamp",
-                            "in": "query",
-                            "description": "时间戳，如1521513257000",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsNonce",
-                            "in": "query",
-                            "description": "6位随机数",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsVersion",
-                            "in": "query",
-                            "description": "版本号：如1.0",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fsJsSign",
-                            "in": "query",
-                            "description": "验签结果字符串",
-                            "required": true,
-                            "type": "string"
-                        },
-                        {
-                            "name": "userId",
-                            "in": "query",
-                            "description": "用户id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "userName",
-                            "in": "query",
-                            "description": "用户名",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "watermarkText",
-                            "in": "query",
-                            "description": "水印文字",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fileId",
-                            "in": "query",
-                            "description": "文件id",
-                            "required": false,
-                            "type": "string"
-                        },
-                        {
-                            "name": "fileToken",
-                            "in": "query",
-                            "description": "fileToken",
-                            "required": false,
-                            "type": "string"
-                        }
-                    ],
-                    "responses": {
-                        "200": {
-                            "description": "OK",
-                            "schema": {
-                                "$ref": "#/definitions/ModelAndView"
-                            }
                         },
                         "401": {
                             "description": "Unauthorized"
@@ -38789,14 +38195,14 @@
                         {
                             "name": "successCallback",
                             "in": "query",
-                            "description": "成功回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID与转换之后的pdf文件ID, sourceFileId=xx&pdfFileId=yy",
+                            "description": "成功回调 http://service-name/*",
                             "required": false,
                             "type": "string"
                         },
                         {
                             "name": "failCallback",
                             "in": "query",
-                            "description": "失败回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID, sourceFileId=xx",
+                            "description": "失败回调 http://service-name/*",
                             "required": false,
                             "type": "string"
                         },
@@ -39432,13 +38838,6 @@
                             "type": "boolean"
                         },
                         {
-                            "name": "repeatable",
-                            "in": "query",
-                            "description": "可重复转pdf, 非必填, 默认false",
-                            "required": false,
-                            "type": "boolean"
-                        },
-                        {
                             "in": "body",
                             "name": "request",
                             "description": "request",
@@ -39962,14 +39361,14 @@
                         {
                             "name": "successCallback",
                             "in": "query",
-                            "description": "成功回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID与转换之后的pdf文件ID, sourceFileId=xx&pdfFileId=yy",
+                            "description": "成功回调 http://service-name/*",
                             "required": false,
                             "type": "string"
                         },
                         {
                             "name": "failCallback",
                             "in": "query",
-                            "description": "失败回调 http://service-name/*, 只支持GET, 回调时会拼接源文件ID, sourceFileId=xx",
+                            "description": "失败回调 http://service-name/*",
                             "required": false,
                             "type": "string"
                         },
@@ -40610,14 +40009,6 @@
                             "description": "fileId",
                             "required": true,
                             "type": "string"
-                        },
-                        {
-                            "name": "latest",
-                            "in": "query",
-                            "description": "是否获取最新的转换结果, 非必填, 默认false; 对文件多次转换时，最后一次转换期间，查询转换结果默认会查询到上一次的转换结果。\n如果想查询最后一次转换的结果，可在调用查询接口时通过参数指定（latest=true）, 指定此参数之后，如果最后一次转换未完成或者转换失败，则返回空，转换成功则返回最后一次转换的结果",
-                            "required": false,
-                            "type": "boolean",
-                            "default": false
                         }
                     ],
                     "responses": {
@@ -40644,7 +40035,7 @@
                     "tags": [
                         "pdf-file-controller"
                     ],
-                    "summary": "获取PDF文件信息, (多次转换的场景, 阻塞获取最新的转换结果)",
+                    "summary": "获取PDF文件信息",
                     "operationId": "getFileInfoSyncUsingGET",
                     "consumes": [
                         "application/json"
@@ -40727,14 +40118,6 @@
                             "description": "fileId",
                             "required": true,
                             "type": "string"
-                        },
-                        {
-                            "name": "latest",
-                            "in": "query",
-                            "description": "是否获取最新的转换结果, 默认false;对文件多次转换时，最后一次转换期间，查询转换结果默认会查询到上一次的转换结果。\n如果想查询最后一次转换的结果，可在调用查询接口时通过参数指定（latest=true）, 指定此参数之后，如果最后一次转换未完成或者转换失败，则阻塞等待结果，转换成功则返回最后一次转换的结果",
-                            "required": false,
-                            "type": "boolean",
-                            "default": false
                         }
                     ],
                     "responses": {
@@ -40762,7 +40145,7 @@
                     "tags": [
                         "pdf-file-controller"
                     ],
-                    "summary": "阻塞获取PDF文件信息，最多阻塞10分钟, (多次转换的场景, 阻塞获取最新的转换结果)",
+                    "summary": "阻塞获取PDF文件信息，最多阻塞10分钟",
                     "operationId": "getFileInfoSyncnewUsingGET",
                     "consumes": [
                         "application/json"
