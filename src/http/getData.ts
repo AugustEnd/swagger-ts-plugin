@@ -29,11 +29,11 @@ export const getData = async () => {
             ).filter((el) => el);
         }
 
-        fs.writeFile(
-            paths.resolve(__dirname, `./a.json`),
-            JSON.stringify(values, null, 4),
-            () => {}
-        );
+        // fs.writeFile(
+        //     paths.resolve(__dirname, `./a.json`),
+        //     JSON.stringify(values, null, 4),
+        //     () => {}
+        // );
         return Promise.resolve(values);
     } catch (error) {}
 };
