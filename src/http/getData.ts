@@ -161,7 +161,6 @@ const getSimpleData = async ({
         let msg = (await new Promise((resolve, reject) => {
             http.get(serviceApiDoc, (val: any) => {
                 if (val.statusCode !== 200) {
-                    console.log(1);
                     reject(null);
                 }
                 resolve(val);

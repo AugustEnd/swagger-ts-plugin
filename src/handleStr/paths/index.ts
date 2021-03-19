@@ -42,7 +42,6 @@ export const completePath = (key: string, val: IDocPaths): CompletePathBack => {
     // 出参
     let { name, type } = responseType(responses);
     let importName = name;
-    name && console.log(name);
     // 入参
     let paramObj = requestType(parameters);
     let importNames: Array<string> = paramObj.importNames;
@@ -169,7 +168,6 @@ export interface pathsObj {\n${str}}`;
                 );
             }),
         ]);
-        console.log("over", global.options.apiDocList, "--");
         outputApi();
     } catch (error) {}
 };
