@@ -21,5 +21,6 @@ export interface CompletePathBack {
     responseImportNames: Array<string>;
     importName: Array<string>;
     reqType: Record<"query" | "body" | "formData" | "path", boolean>;
+    urlAsId: boolean;
     urlHeader?: string;
 }

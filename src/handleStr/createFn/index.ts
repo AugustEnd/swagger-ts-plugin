@@ -1,6 +1,7 @@
 import { IBuildFnProps, IBuildFnBack } from "./index.d";
 import * as paths from "path";
 import * as fs from "fs";
+import { Methods } from "../../index.d";
 
 export const buildFn = ({
     method,
@@ -10,6 +11,7 @@ export const buildFn = ({
     backParams,
     reqType,
     urlHeader,
+    urlAsId,
 }: IBuildFnProps): IBuildFnBack => {
     let queryInfo = reqType.query
         ? `for(let key in query){
@@ -55,6 +57,8 @@ search = search ? (search + '&' + val).toString() : val.toString();
         operationId,
         url,
         fnStr,
+        urlAsId,
+        method,
     };
 };
 
@@ -62,13 +66,18 @@ export const currentServiceFn = (
     list: Array<IBuildFnProps>,
     importList: Array<string>
 ): string => {
-    let fnIds: Array<{ operationId: string; url: string }> = [];
+    let fnIds: Array<{
+        operationId: string;
+        url: string;
+        urlAsId: boolean;
+        method: Methods;
+    }> = [];
     // 路由和operationId映射；
     let urlToIdmaps: { [key: string]: string } = {};
 
     let str = list.reduce((prev, next) => {
-        let { fnStr, operationId, url } = buildFn(next);
-        fnIds.push({ operationId, url });
+        let { fnStr, operationId, url, urlAsId, method } = buildFn(next);
+        fnIds.push({ operationId, url, urlAsId, method });
         urlToIdmaps[operationId] = url;
         return (prev += fnStr);
     }, "");
@@ -76,50 +85,54 @@ export const currentServiceFn = (
     return `import {${importList.join(",")}} from './interface.d';
 
     // 把动态路由加入到url中
-    const pathAddToUrl = (url: string, pathObj: any): string => {
-        let reqList = [...url.matchAll(/\{[0-9A-Za-z]+\}/g)].map((el) => el[0]);
-
-        return reqList.reduce(
-            (prev, next) =>
-                prev.replace(
-                    new RegExp(next),
-                    pathObj[next.slice(1, next.length - 1)]
-                ),
-            url
+    const pathAddToUrl = (url: string, pathObj: any): string =>
+        url.replace(
+            /{[0-9A-Za-z]+}/g,
+            (val) => pathObj[val.slice(1, val.length - 1)]
         );
-    };
     
     ${str}
-    ${export__switchMaps(urlToIdmaps)}
-    ${exportMaps(urlToIdmaps)} ${exportFn(fnIds)}`;
+    ${exportFn(fnIds)}`;
 };
 
-export const export__switchMaps = (obj: any) => {
+// ${exportSwitchMaps(urlToIdmaps)}
+// ${exportMaps(urlToIdmaps)}
+
+// operationId对应函数的类型
+export const exportSwitchMaps = (obj: any) => {
     return `export interface __switchMaps {${Object.keys(obj).reduce(
         (prev, next) => (prev += `"${obj[next]}": typeof ${next};`),
         ""
     )}}`;
 };
 
+// operationId与url映射
 export const exportMaps = (obj: any) => {
     return `export const __urlMaps = ${JSON.stringify(obj)}\n`;
 };
 
 export const exportFn = (
-    ids: Array<{ operationId: string; url: string }>
+    ids: Array<{
+        operationId: string;
+        url: string;
+        urlAsId: boolean;
+        method?: Methods;
+    }>
 ): string => {
     global.options.outputPath;
+
     return `export default function<T> (http:T) {
         return {
         ${ids
-            .concat({ operationId: "http", url: "__http" })
+            .concat({ operationId: "http", url: "__http", urlAsId: true })
             .reduce((prev, next) => {
                 // 使用id作为标识
                 // return prev ? prev + ", " + next.operationId : next.operationId;
                 // 使用url作为标识
+                let extra = !next.urlAsId ? "|" + next.method : "";
                 return prev
-                    ? `${prev}, "${next.url}":${next.operationId}`
-                    : `"${next.url}":${next.operationId}`;
+                    ? `${prev}, "${next.url}${extra}":${next.operationId}`
+                    : `"${next.url}${extra}":${next.operationId}`;
             }, "")}
         }
     }`;
@@ -203,34 +216,20 @@ export const outputApi = () => {
     );
 };
 
-// export const ${operationId} = (params:${parameters}):Promise<${backParams}> => {
-//     // 把动态路由加入到url中
-//     const pathAddToUrl = (url: string, pathObj: any): string => {
-//         let reqList = [...url.matchAll(/\{[0-9A-Za-z]+\}/g)].map((el) => el[0]);
-
-//         return reqList.reduce(
-//             (prev, next) =>
-//                 prev.replace(
-//                     new RegExp(next),
-//                     pathObj[next.slice(1, next.length - 1)]
-//                 ),
-//             url
-//         );
-//     };
+// export const ${operationId} = function(this:any,params:${parameters}):Promise<${backParams}> {
 
 //     let { query, path, formData, body } = params;
 //     let url = "${url}";
 //     if( path ) {
 //         url = pathAddToUrl(url, path);
 //     }
-//     if("post"){
+//     if(method === "post"){
 //         let search = '';
 //         for(let key in query){
 //             let val = query[key]
 //             search = search ? search + '&' + val : val;
 //         }
 //         url = url + (search?'?'+search:'');
-//         query = body || {} as any;
 //     }
-//     return http[method](url,query) as any;
+//     return this.__http[method](url,query) as any;
 // }

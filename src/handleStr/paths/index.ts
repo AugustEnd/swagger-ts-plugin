@@ -33,54 +33,59 @@ const varType = ["any", "string", "number", "boolean", "undefault", "null"];
  * @param key
  * @param val
  */
-export const completePath = (key: string, val: IDocPaths): CompletePathBack => {
-    let str = "";
+export const completePath = (
+    key: string,
+    val: IDocPaths
+): Array<CompletePathBack> => {
+    let list: Array<CompletePathBack> = [];
+    for (let method in val) {
+        let str = "";
+        const { parameters, responses, operationId } = val[method as Methods];
+        // 出参
+        let { name, type } = responseType(responses);
+        let importName = name;
+        // 入参
+        let paramObj = requestType(parameters);
+        let importNames: Array<string> = paramObj.importNames;
 
-    let method = Object.keys(val)[0] as Methods;
+        str = `    "${key}": {
+            method: "${method}";
+            parameters:${paramObj.params},
+            paramsList:${JSON.stringify(paramObj.reqType)}
+            operationId:"${operationId}",
+            data: ${
+                type === "array"
+                    ? `Array<${importName ? importName : null}>`
+                    : importName
+                    ? importName
+                    : null
+            };
+        };`;
 
-    const { parameters, responses, operationId } = val[method];
-    // 出参
-    let { name, type } = responseType(responses);
-    let importName = name;
-    // 入参
-    let paramObj = requestType(parameters);
-    let importNames: Array<string> = paramObj.importNames;
+        importName && importNames.push(handleSpecialSymbol(importName));
+        list.push({
+            str,
+            urlAsId: Object.keys(val).length === 1,
+            method: method as Methods,
+            url: key,
+            requestImportNames: importNames,
+            parameters: paramObj.params,
+            reqType: paramObj.reqType,
+            backParams:
+                type === "array"
+                    ? `Array<${importName ? importName : null}>`
+                    : importName
+                    ? importName
+                    : null,
+            operationId,
+            responseImportNames: importName
+                ? [handleSpecialSymbol(importName)]
+                : [],
+            importName: importNames,
+        });
+    }
 
-    str = `    "${key}": {
-        method: "${method}";
-        parameters:${paramObj.params},
-        paramsList:${JSON.stringify(paramObj.reqType)}
-        operationId:"${operationId}",
-        data: ${
-            type === "array"
-                ? `Array<${importName ? importName : null}>`
-                : importName
-                ? importName
-                : null
-        };
-    };`;
-
-    importName && importNames.push(handleSpecialSymbol(importName));
-
-    return {
-        str,
-        method,
-        url: key,
-        requestImportNames: importNames,
-        parameters: paramObj.params,
-        reqType: paramObj.reqType,
-        backParams:
-            type === "array"
-                ? `Array<${importName ? importName : null}>`
-                : importName
-                ? importName
-                : null,
-        operationId,
-        responseImportNames: importName
-            ? [handleSpecialSymbol(importName)]
-            : [],
-        importName: importNames,
-    };
+    return list;
 };
 
 /**
@@ -100,19 +105,20 @@ export const completePathAll = async (
 
     let str = "";
     let importSet = new Set();
-    let pathInfoList = [];
+    let pathInfoList: Array<any> = [];
     for (let key in paths) {
-        let onePath = completePath(key, paths[key]);
-        onePath.importName.map(
-            (el) => el && importSet.add(exchangeZhToEn(el).str)
-        );
-        pathInfoList.push({ ...onePath, urlHeader: options?.name });
-        str += onePath.str + "\n";
+        let onePaths = completePath(key, paths[key]);
+        onePaths.map((onePath) => {
+            onePath.importName.map(
+                (el) => el && importSet.add(exchangeZhToEn(el).str)
+            );
+            pathInfoList.push({ ...onePath, urlHeader: options?.name });
+            str += onePath.str + "\n";
+        });
     }
     let importList = Array.from(importSet.values()) as Array<string>;
     str = `import {${importList.join(",")}} from './interface.d';
 export interface pathsObj {\n${str}}`;
-
     // 当前服务所有请求函数
     let fnStr = currentServiceFn(
         pathInfoList as Array<
@@ -220,7 +226,7 @@ export const requestType = (
     let collectNames = new Set();
     let queryStr = query.reduce(
         (a: string, b: IDocPathsParamsItem) =>
-            `${a}"${b.name}": ${switchType(
+            `${a}"${b.name}"?: ${switchType(
                 b.type,
                 undefined,
                 "strict",
