@@ -1,4 +1,4 @@
-import { IDocBack } from "../../http/index.d";
+import { IDocProps } from "../../index.d";
 
 export type JavaType =
     | "array"
@@ -10,7 +10,7 @@ export type JavaType =
     | undefined;
 
 export interface IAllInterface {
-    interfaceObj: IDocBack;
+    interfaceObj: IDocProps;
     options?: {
         rootPath?: string;
         name?: string;

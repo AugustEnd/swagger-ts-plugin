@@ -44,10 +44,7 @@ export async function startCreate(options: ISwaggerProps) {
                     // 所有定义
                     await completeInterfaceAll(el, {
                         name: el.serviceName,
-                        rootPath: path.resolve(
-                            outputPath || +__dirname,
-                            "./swagger2ts"
-                        ),
+                        rootPath: outputPath,
                     });
                     // console.log(
                     //     Object.keys(el.data),
@@ -55,10 +52,7 @@ export async function startCreate(options: ISwaggerProps) {
                     // );
                     await completePathAll(el.paths, {
                         name: el.serviceName,
-                        rootPath: path.resolve(
-                            outputPath || +__dirname,
-                            "./swagger2ts"
-                        ),
+                        rootPath: path.resolve(outputPath),
                     });
                     return Promise.resolve();
                 } catch (error) {

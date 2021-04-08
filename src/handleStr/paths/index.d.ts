@@ -17,6 +17,7 @@ export interface CompletePathBack {
     parameters: string;
     backParams: string;
     operationId: string;
+    summary: string;
     requestImportNames: Array<string>;
     responseImportNames: Array<string>;
     importName: Array<string>;

@@ -3,6 +3,7 @@ export interface IBuildFnProps {
     method: Methods;
     operationId: string;
     parameters: string;
+    summary: string;
     url: string;
     backParams: string;
     urlAsId: boolean;

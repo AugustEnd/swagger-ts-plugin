@@ -4,13 +4,14 @@ import { typeMap, switchType } from "../interface";
 import { exchangeZhToEn } from "../../create/helper";
 import { outputApi } from "../createFn/index";
 // 类型
-import { Methods } from "../../index.d";
 import {
+    Methods,
     IDocPaths,
-    IDocPathsParams,
+    IDocPathMethods,
     IDocPathsParamsItem,
-    IDocBack,
-} from "../../http/index.d";
+    IDocPathsMethod,
+} from "../../index.d";
+
 import { IAllInterface } from "../interface/index.d";
 import { CompletePathBack } from "./index.d";
 import { currentServiceFn } from "../createFn";
@@ -35,20 +36,33 @@ const varType = ["any", "string", "number", "boolean", "undefault", "null"];
  */
 export const completePath = (
     key: string,
-    val: IDocPaths
+    val: IDocPathMethods
 ): Array<CompletePathBack> => {
     let list: Array<CompletePathBack> = [];
+    let commonParam: Array<IDocPathsParamsItem> = [];
     for (let method in val) {
+        if (method === "parameters") {
+            commonParam = val[method];
+            continue;
+        }
+        // 移除 已被弃用的接口
+        if (val[method as Methods].deprecated) continue;
+
         let str = "";
-        const { parameters, responses, operationId } = val[method as Methods];
+        const { parameters, responses, operationId, summary, consumes } = val[
+            method as Methods
+        ];
         // 出参
         let { name, type } = responseType(responses);
         let importName = name;
+
         // 入参
-        let paramObj = requestType(parameters);
+        let paramObj = requestType(commonParam.concat(parameters));
         let importNames: Array<string> = paramObj.importNames;
 
-        str = `    "${key}": {
+        str = `    "${key}${
+            Object.keys(val).length !== 1 ? `|${method}` : ""
+        }": {
             method: "${method}";
             parameters:${paramObj.params},
             paramsList:${JSON.stringify(paramObj.reqType)}
@@ -63,6 +77,7 @@ export const completePath = (
         };`;
 
         importName && importNames.push(handleSpecialSymbol(importName));
+
         list.push({
             str,
             urlAsId: Object.keys(val).length === 1,
@@ -78,6 +93,7 @@ export const completePath = (
                     ? importName
                     : null,
             operationId,
+            summary,
             responseImportNames: importName
                 ? [handleSpecialSymbol(importName)]
                 : [],
@@ -94,7 +110,7 @@ export const completePath = (
  * @param options 接口对象
  */
 export const completePathAll = async (
-    paths: IDocBack["paths"],
+    paths: IDocPaths,
     options?: IAllInterface["options"]
 ) => {
     let newOptions = {
@@ -184,7 +200,7 @@ export interface pathsObj {\n${str}}`;
  * @returns
  */
 export const responseType = (
-    responses: IDocPathsParams["responses"]
+    responses: IDocPathsMethod["responses"]
 ): { name: string; type: string } => {
     let dto = null;
     let type;
@@ -209,7 +225,7 @@ export const responseType = (
  */
 
 export const requestType = (
-    parameters: IDocPathsParams["parameters"]
+    parameters: IDocPathsMethod["parameters"]
 ): {
     params: string;
     importNames: Array<string>;
@@ -226,10 +242,12 @@ export const requestType = (
     let collectNames = new Set();
     let queryStr = query.reduce(
         (a: string, b: IDocPathsParamsItem) =>
-            `${a}"${b.name}"?: ${switchType(
+            `${a}"${b.name}"${!b.required ? "?" : ""}: ${switchType(
                 b.type,
                 undefined,
                 "strict",
+                b.required,
+                b?.enum,
                 undefined
             )};`,
         ""
@@ -241,6 +259,8 @@ export const requestType = (
                 b.type,
                 undefined,
                 "strict",
+                b.required,
+                b?.enum,
                 undefined
             )};`,
         ""
@@ -252,6 +272,8 @@ export const requestType = (
                 b.type,
                 b.schema?.$ref?.split("/")[2] || null,
                 "strict",
+                b.required,
+                b?.enum,
                 (name) => {
                     collectNames.add(handleSpecialSymbol(name));
                 }

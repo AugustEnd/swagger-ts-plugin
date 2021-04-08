@@ -7,6 +7,7 @@ export const buildFn = ({
     method,
     url,
     operationId,
+    summary,
     parameters,
     backParams,
     reqType,
@@ -19,12 +20,15 @@ let val = query[key as keyof typeof query];
 search = search ? (search + '&' + val).toString() : val.toString();
 }`
         : "";
-    let fnStr = `export const ${operationId} = function(this:any,params:${parameters}):Promise<${backParams}> {
-        let { ${reqType.query ? "query, " : ""}${
-        reqType.path ? "path, " : ""
-    } ${reqType.formData ? "formData, " : ""}${
-        reqType.body ? "body" : ""
-    } } = params;
+    let fnStr = `
+
+/**
+ * 备注：${summary}
+ */
+export const ${operationId} = function(this:any,params:${parameters}):Promise<${backParams}> {
+    let { ${reqType.query ? "query, " : ""}${reqType.path ? "path, " : ""} ${
+        reqType.formData ? "formData, " : ""
+    }${reqType.body ? "body" : ""} } = params;
         let url = "${url}";
         ${
             reqType.path
@@ -41,7 +45,7 @@ search = search ? (search + '&' + val).toString() : val.toString();
         `
                 : ""
         }
-        return this.__http.${method}( "/api/${urlHeader}" + url,${
+        return this.__http.${method}( "/${urlHeader}" + url,${
         method === "get"
             ? reqType.query
                 ? "query"
@@ -84,14 +88,14 @@ export const currentServiceFn = (
 
     return `import {${importList.join(",")}} from './interface.d';
 
-    // 把动态路由加入到url中
-    const pathAddToUrl = (url: string, pathObj: any): string =>
-        url.replace(
-            /{[0-9A-Za-z]+}/g,
-            (val) => pathObj[val.slice(1, val.length - 1)]
-        );
+// 把动态路由加入到url中
+const pathAddToUrl = (url: string, pathObj: any): string =>
+    url.replace(
+        /{[0-9A-Za-z]+}/g,
+        (val) => pathObj[val.slice(1, val.length - 1)]
+    );
     
-    ${str}
+${str}
     ${exportFn(fnIds)}`;
 };
 
@@ -151,7 +155,7 @@ interface APIType {
     )}
 }
 
-export default function API<T>(this: any, http: T): APIType {
+export default function API<T>(http: T): APIType {
 ${list.reduce(
     (prev, next) =>
         (prev += `const ${humpName(next.serviceName)} = ${humpName(
@@ -208,7 +212,7 @@ export const humpName = (name: string): string => {
 export const outputApi = () => {
     let str = exportApi();
     fs.writeFile(
-        paths.resolve(global.options.outputPath, "swagger2ts/request.ts"),
+        paths.resolve(global.options.outputPath, "request.ts"),
         str,
         (err) => {
             console.log(err);

@@ -4,8 +4,7 @@ const fs = require("fs");
 const md5 = require("md5");
 const paths = require("path");
 import { handleSpecialSymbol } from "../utils/common";
-import { ParamsBaidu } from "./index.d";
-import { ISwaggerProps } from "../index.d";
+import { ParamsBaidu, ParamsZhiyi } from "./index.d";
 
 /**
  * 获取中文转英文翻译
@@ -15,16 +14,39 @@ import { ISwaggerProps } from "../index.d";
 export async function getTranslateInfo(values: Array<string>) {
     const { options } = global;
     let translationObj: { [key: string]: any } = getTranslateJson(
-        paths.resolve(options.outputPath, "swagger2ts/translation.json")
+        paths.resolve(options.outputPath, "translation.json")
     );
     // 过滤掉已翻译的
     values = values.filter((el) => !translationObj.hasOwnProperty(el));
-    // console.log(values, "values");
+
+    try {
+        await zhiyiTranslationHandle(values, translationObj);
+    } catch (error) {
+        console.log("知译翻译失败,使用百度翻译");
+        // 百度翻译处理
+        await baiduTranslationHandle(values, translationObj);
+    }
+
+    if (global.swagger2global) {
+        global.swagger2global.transitions = translationObj || {};
+    } else {
+        global.swagger2global = { transitions: translationObj || {} };
+    }
+
+    return translationObj;
+}
+
+// 百度翻译
+export const baiduTranslationHandle = async (
+    values: Array<string>,
+    translationObj: { [key: string]: any }
+) => {
+    const { options } = global;
     const { maxLimit, appid, secretKey } = options?.fanyi?.baidu;
     let qList = splitArray(values, maxLimit);
     let salt = Math.floor(Math.random() * 1e10);
 
-    // 这里的一秒调用一次接口，犹豫第三方接口限制
+    // 这里的一秒调用一次接口，第三方接口限制
     async function loop(index: number) {
         let q = qList[index];
         let sign = md5(appid + q + salt + secretKey);
@@ -48,21 +70,7 @@ export async function getTranslateInfo(values: Array<string>) {
                                 const { trans_result = [] } = result;
                                 // 把翻译的信息存到translationObj；
                                 trans_result.map((el) => {
-                                    translationObj[el.src] = el.dst
-                                        .split(/\s+/)
-                                        .reduce(
-                                            (a, b) =>
-                                                a +
-                                                handleSpecialSymbol(
-                                                    b
-                                                        .substr(0, 1)
-                                                        .toUpperCase() +
-                                                        b
-                                                            .substr(1)
-                                                            .toLowerCase()
-                                                ),
-                                            ""
-                                        );
+                                    translationObj[el.src] = handleEn(el.dst);
                                 });
                                 setTimeout(() => {
                                     resolve(JSON.parse(rawData));
@@ -90,18 +98,15 @@ export async function getTranslateInfo(values: Array<string>) {
     if (qList.length > 0) {
         await loop(0);
         // 判断文件swagger2ts是否存在，不存在则创建
-        if (!fs.existsSync(paths.resolve(options.outputPath, "/swagger2ts"))) {
-            fs.mkdirSync(paths.resolve(options.outputPath, "swagger2ts"));
+        if (!fs.existsSync(options.outputPath)) {
+            fs.mkdirSync(options.outputPath);
         }
         // 把翻译的内容写入
         await new Promise((resolve, reject) => {
             // 判断 'swagger2ts文件是否存在
 
             fs.writeFile(
-                paths.resolve(
-                    options.outputPath,
-                    "swagger2ts/translation.json"
-                ),
+                paths.resolve(options.outputPath, "translation.json"),
                 JSON.stringify(translationObj, null, 4),
                 (error: any) => {
                     if (error) {
@@ -113,11 +118,107 @@ export async function getTranslateInfo(values: Array<string>) {
             );
         });
     }
-    global.swagger2global = {
-        transitions: translationObj || {},
-    };
-    return translationObj;
-}
+};
+
+// 知译翻译
+export const zhiyiTranslationHandle = async (
+    values: Array<string>,
+    translationObj: { [key: string]: any }
+) => {
+    const { options } = global;
+    const maxLimit = 2000;
+    let qList = splitArray(values, maxLimit);
+
+    // 保留了百度一样处理
+    async function loop(index: number) {
+        let q = qList[index];
+
+        let msg = await new Promise((resolve, reject) => {
+            const content = {
+                entityTag: "0",
+                field: "common",
+                lang: "chinese",
+                src: values,
+            };
+            const req = https.request(
+                "https://www.trialos.com/api/ai-translationservice/ai/translate/translateBatch",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/x-www-form-urlencoded; charset=UTF-8",
+                    },
+                },
+                (val: any) => {
+                    val.setEncoding("utf8");
+                    let rawData = "";
+
+                    val.on("data", (chunk: any) => {
+                        rawData += chunk;
+                    });
+
+                    val.on("end", () => {
+                        try {
+                            let result: ParamsZhiyi = JSON.parse(rawData);
+                            const { data } = result;
+                            // 把翻译的信息存到translationObj；
+                            for (let key in data.tgt) {
+                                translationObj[key] = handleEn(
+                                    data.tgt[key].tgt
+                                );
+                            }
+
+                            setTimeout(() => {
+                                resolve(JSON.parse(rawData));
+                            }, 1000);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+
+                    val.on("error", (error: any) => {
+                        reject(error);
+                    });
+                }
+            );
+            // write data to request body
+            req.write(JSON.stringify(content));
+            req.end();
+        });
+        if (index + 1 < qList.length) {
+            loop(index + 1);
+        } else {
+            Promise.resolve("完成");
+        }
+    }
+    if (qList.length > 0) {
+        try {
+            await loop(0);
+            // 判断文件夹是否存在，不存在则创建
+            if (!fs.existsSync(options.outputPath)) {
+                fs.mkdirSync(options.outputPath);
+            }
+            // 把翻译的内容写入
+            await new Promise((resolve, reject) => {
+                // 判断 'swagger2ts文件是否存在
+
+                fs.writeFile(
+                    paths.resolve(options.outputPath, "translation.json"),
+                    JSON.stringify(translationObj, null, 4),
+                    (error: any) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve("写入成功");
+                        }
+                    }
+                );
+            });
+        } catch (error) {
+            return Promise.reject();
+        }
+    }
+};
 
 /**
  * 获取上次翻译的信息
@@ -155,4 +256,18 @@ export const splitArray = (list: Array<string>, maxLimit: number) => {
     }
     if (arr) splitList.push(arr);
     return splitList;
+};
+
+// 返回的英文处理
+export const handleEn = (str: string) => {
+    return str
+        .split(/\s+/)
+        .reduce(
+            (a, b) =>
+                a +
+                handleSpecialSymbol(
+                    b.substr(0, 1).toUpperCase() + b.substr(1).toLowerCase()
+                ),
+            ""
+        );
 };

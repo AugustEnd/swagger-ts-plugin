@@ -2,7 +2,7 @@ import { ISwaggerProps } from "../index.d";
 import * as paths from "path";
 
 const defaultValue: ISwaggerProps = {
-    outputPath: paths.resolve(__dirname, "../../"),
+    outputPath: paths.resolve(__dirname, "../../swagger2ts"),
     serverList: [],
     apiDocList: [],
     fanyi: {

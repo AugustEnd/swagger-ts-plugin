@@ -6,7 +6,6 @@ import { IAllInterface } from "./index.d";
 import { JavaType } from "../../index.d";
 import { IServiceProps } from "../../index.d";
 import { IEurekaBack, IEurekaItem } from "../../http/index.d";
-import { unlink } from "node:fs";
 /**
  * 映射后端语言类型与ts类型
  * @param param0
@@ -17,10 +16,14 @@ export const typeMap = (
     {
         type,
         items,
+        required,
+        enum: enumType,
         $ref,
     }: {
         type: JavaType;
+        enum?: Array<string>;
         items?: any;
+        required?: boolean;
         $ref?: string;
     },
     use?: "strict",
@@ -31,17 +34,27 @@ export const typeMap = (
         items?.$ref?.split("/")[2] ||
         $ref?.split("/")[2] ||
         null;
-    return switchType(type, childProps, use, fn);
+
+    return switchType(type, childProps, use, required, enumType, fn);
 };
 
 export const switchType = (
     type: JavaType,
     childProps: unknown,
     use: "strict",
+    required: boolean,
+    enumType?: Array<string>,
     fn?: (name: string) => void
 ) => {
     switch (type) {
         case "string":
+            if (enumType && enumType.length > 0) {
+                return enumType.reduce(
+                    (prev, next) =>
+                        prev ? `${prev} | "${next}"` : `"${next}"`,
+                    ""
+                );
+            }
             return use === "strict" ? "string" : "string | null";
         case "number":
             return use === "strict" ? "number" : "number | null";
@@ -90,7 +103,7 @@ export const tsConcat = (
     { key, val }: { key: string; val: any },
     prevStr: string
 ) => {
-    return `${prevStr}\n    ${key}: ${typeMap(val)};`;
+    return `${prevStr}\n    ${key}${val.required ? "" : "?"}: ${typeMap(val)};`;
 };
 
 /**
@@ -99,18 +112,49 @@ export const tsConcat = (
  * @param val
  */
 export const completeInterface = (key: string, val: any) => {
-    let noteStr = "";
-    let tsStr = "";
+    let noteList = [];
+    let tsList = [];
     for (let key in val.properties) {
         let propsVal = val.properties[key];
         let keyName = handleSpecialSymbol(key);
-        noteStr = noteConcat({ key: keyName, val: propsVal }, noteStr);
-        tsStr = tsConcat({ key: keyName, val: propsVal }, tsStr);
+
+        let required =
+            propsVal.required === undefined &&
+            val.required &&
+            val.required.length > 0
+                ? val.required.includes(key)
+                : !!propsVal.required;
+        let noteOneStr = noteConcat(
+            {
+                key: keyName,
+                val: {
+                    ...propsVal,
+                    required: required,
+                },
+            },
+            ""
+        );
+        let tsOneStr = tsConcat(
+            {
+                key: keyName,
+                val: {
+                    ...propsVal,
+                    required: required,
+                },
+            },
+            ""
+        );
+        if (!required) {
+            noteList.push(noteOneStr);
+            tsList.push(tsOneStr);
+        } else {
+            noteList.unshift(noteOneStr);
+            tsList.unshift(tsOneStr);
+        }
     }
-    // console.log(key);
-    return `/**${noteStr}\n */ \nexport interface ${handleSpecialSymbol(
+    return `/**${noteList.join()}\n */ \nexport interface ${handleSpecialSymbol(
         key
-    )} {${tsStr}\n}
+    )} {${tsList.join("")}\n}
 `;
 };
 
@@ -155,7 +199,9 @@ export const completeInterfaceAll = async (
             str,
             () => {}
         );
-    } catch (error) {}
+    } catch (error) {
+        console.log("error");
+    }
 };
 
 // 处理 serverList中只传服务地址的情况

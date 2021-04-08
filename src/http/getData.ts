@@ -3,16 +3,14 @@ import * as fs from "fs";
 import * as paths from "path";
 import completeServiceList from "./serviceInfo";
 // 类型
-import { IServiceProps, IServiceApiDocProps } from "../index.d";
-import { IDocBack } from "./index.d";
-import { resolve } from "node:path";
+import { IServiceProps, IServiceApiDocProps, IDocProps } from "../index.d";
 
 export const getData = async () => {
     const { apiDocList } = global.options;
     let serviceArr = await completeServiceList();
     try {
         // 已获取到所有服务数据
-        let values: Array<IDocBack> = [];
+        let values: Array<IDocProps> = [];
         if (apiDocList?.length !== 0) {
             values = (
                 await Promise.all(
@@ -29,11 +27,6 @@ export const getData = async () => {
             ).filter((el) => el);
         }
 
-        // fs.writeFile(
-        //     paths.resolve(__dirname, `./a.json`),
-        //     JSON.stringify(values, null, 4),
-        //     () => {}
-        // );
         return Promise.resolve(values);
     } catch (error) {}
 };
@@ -62,7 +55,7 @@ export const addParmas = async ({
 export const getSimpleServiceDataByIp = async ({
     serviceName,
     serviceUrl,
-}: IServiceProps): Promise<IDocBack> => {
+}: IServiceProps): Promise<IDocProps> => {
     let serviceApiDocUrl;
     try {
         let p = await addParmas({ serviceName, serviceUrl });
@@ -156,7 +149,7 @@ interface ISimpleData extends Omit<IServiceProps, "serviceUrl"> {
 const getSimpleData = async ({
     serviceName,
     serviceApiDoc,
-}: ISimpleData): Promise<IDocBack> => {
+}: ISimpleData): Promise<IDocProps> => {
     try {
         let msg = (await new Promise((resolve, reject) => {
             http.get(serviceApiDoc, (val: any) => {
@@ -177,14 +170,21 @@ const getSimpleData = async ({
         return new Promise((resolve, reject) => {
             msg.on("end", () => {
                 try {
-                    const data = JSON.parse(rawData);
+                    let data = JSON.parse(rawData);
+                    if (data.swagger?.split(".")[0] - 0 !== 2) {
+                        swagger3to2(data);
+                    }
                     resolve({
                         data: data.definitions,
+                        basePath: data.basePath,
+                        host: data.host,
+                        swagger: data.swagger || "2.0",
+                        tags: data.tags,
                         serviceName,
                         paths: data.paths,
                     });
                 } catch (e) {
-                    console.log("error");
+                    console.log("error", e);
                     reject(e.message);
                 }
             });
@@ -193,4 +193,60 @@ const getSimpleData = async ({
         console.log(error, "error");
         return Promise.resolve(null);
     }
+};
+
+export const swagger3to2 = (data: any) => {
+    let schemas = data.components.schemas;
+    let paths = data.paths;
+
+    if (schemas) {
+        for (let key in schemas) {
+            const properties = schemas[key].properties;
+            if (properties) {
+                for (let key2 in properties) {
+                    if (properties[key2].$ref) {
+                        properties[key2].$ref = properties[key2].$ref.replace(
+                            /components\/schemas/g,
+                            "definitions"
+                        );
+                    }
+                    if (properties[key2]?.items?.$ref) {
+                        properties[key2].items.$ref = properties[
+                            key2
+                        ].items.$ref.replace(
+                            /components\/schemas/g,
+                            "definitions"
+                        );
+                    }
+                }
+            }
+        }
+    }
+    data.definitions = schemas;
+    data.swagger = 3;
+    if (paths) {
+        for (let key in paths) {
+            let path = paths[key];
+            for (let key2 in path) {
+                let methodData = path[key2];
+                methodData.consumes = [];
+                methodData.parameters = methodData.parameters || [];
+                if (methodData.requestBody) {
+                    const { content } = methodData.requestBody;
+
+                    for (let key in content) {
+                        methodData.consumes.push(key);
+                        methodData.parameters.push({
+                            in: "body",
+                            name: "",
+                            contentType: key,
+                            required: true,
+                            schema: content[key].schema || null,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    data.components && delete data.components;
 };
