@@ -9,9 +9,9 @@ const execute = async () => {
         serverList: [
             "fs-service",
             "sms-service",
-            "trialpartner-web",
-            "econfig-web",
-            "zhiyi-app",
+            // "trialpartner-web",
+            // "econfig-web",
+            // "zhiyi-app",
         ],
         appUrl: "http://eureka.dev.com:1111/eureka/apps",
     });
