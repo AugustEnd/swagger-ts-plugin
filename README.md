@@ -1,7 +1,6 @@
 ### 一、前言
 
-开始写 swagger2ts 这个包，纯粹只是不想写后端返回的数据的出参定义和注释（interface.d.ts 文件），然后希望通过接口地址能找到这个定义加了 paths 文件（path.ts）。到了第二版中台的同学想把它做成满足公司的数据服务层解决方案，其实就是生成可以直接调用的函数
-[![Rec 0001.mp4](https://gw.alipayobjects.com/mdn/prod_resou/afts/img/A*NNs6TKOR3isAAAAAAAAAAABkARQnAQ)]()
+开始写 swagger2ts 这个包，纯粹只是不想写后端返回的数据的出参定义和注释（interface.d.ts 文件），然后希望通过接口地址能找到这个定义加了 paths 文件（path.ts）。到了第二版中台的同学想把它做成满足公司的数据服务层解决方案，其实就是生成可以直接调用的函数 [视频链接](https://cloud.video.taobao.com/play/u/523652/p/1/d/hd/e/6/t/1/305700562543.mp4?auth_key=YXBwX2tleT04MDAwMDAwMTImYXV0aF9pbmZvPXsidGltZXN0YW1wRW5jcnlwdGVkIjoiOGYwMDkwZDNiZWM2YWM1OGY1N2UwMmIyNzcwYzIzNWQifSZkdXJhdGlvbj0mdGltZXN0YW1wPTE2MTgyODUwMDk=)
 
 ### 二、分析
 
