@@ -2,7 +2,7 @@ import { handleSpecialSymbol } from "../../utils/common";
 import * as fs from "fs";
 import { typeMap, switchType } from "../interface";
 import { exchangeZhToEn } from "../../create/helper";
-import { outputApi } from "../createFn/index";
+
 // 类型
 import {
     Methods,
@@ -57,7 +57,9 @@ export const completePath = (
         let importName = name;
 
         // 入参
-        let paramObj = requestType(commonParam.concat(parameters));
+        let paramObj = requestType(
+            commonParam.concat(parameters).filter((el) => el)
+        );
         let importNames: Array<string> = paramObj.importNames;
 
         str = `    "${key}${
@@ -190,7 +192,6 @@ export interface pathsObj {\n${str}}`;
                 );
             }),
         ]);
-        outputApi();
     } catch (error) {}
 };
 

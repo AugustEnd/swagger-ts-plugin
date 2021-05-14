@@ -2,5 +2,6 @@
 .git
 .idea
 /swagger2ts
+/lib
 */test.ts
 yarn-error.log

@@ -6,14 +6,8 @@ const path = require("path");
 const execute = async () => {
     await startCreate({
         ...defaultValue,
-        serverList: [
-            "fs-service",
-            "sms-service",
-            // "trialpartner-web",
-            // "econfig-web",
-            // "zhiyi-app",
-        ],
-        appUrl: "http://eureka.dev.com:1111/eureka/apps",
+        serverList: ["sms-service", "trialpartner-web", "trialos-service"],
+        appUrl: "http://eureka.test.com:1111/eureka/apps",
     });
 };
 

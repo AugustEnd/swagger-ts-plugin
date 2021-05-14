@@ -16,8 +16,8 @@ export const buildFn = ({
 }: IBuildFnProps): IBuildFnBack => {
     let queryInfo = reqType.query
         ? `for(let key in query){
-let val = query[key as keyof typeof query];
-search = search ? (search + '&' + val).toString() : val.toString();
+let val = query[key as keyof typeof query] as any;
+search = search ? (search + '&' + key+'='+val).toString() : (key+'='+val).toString();
 }`
         : "";
     let fnStr = `
@@ -37,25 +37,14 @@ export const ${operationId} = function(this:any,params:${parameters}):Promise<${
         }`
                 : ""
         }
-        ${
-            method.toLowerCase() === "post"
-                ? `let search = '';
-            ${queryInfo}
+        let search = '';
+        ${queryInfo}
         url = url + (search?'?'+search:'');
-        `
-                : ""
-        }
-        return this.__http.${method}( "/${urlHeader}" + url,${
-        method === "get"
-            ? reqType.query
-                ? "query"
-                : ""
-            : reqType.formData
-            ? "formData"
-            : reqType.body
-            ? "body"
-            : ""
-    }) as any;
+        
+        return this.__http.${method}( "/${urlHeader}" + url,${urlQ(
+        method,
+        reqType
+    )}) as any;
     };\n`;
     return {
         operationId,
@@ -64,6 +53,18 @@ export const ${operationId} = function(this:any,params:${parameters}):Promise<${
         urlAsId,
         method,
     };
+};
+
+export const urlQ = (method: string, reqType: IBuildFnProps["reqType"]) => {
+    if (method === "get") {
+        return "";
+    } else {
+        if (reqType.formData) {
+            return "formData";
+        } else {
+            return reqType.body ? "body" : "";
+        }
+    }
 };
 
 export const currentServiceFn = (
@@ -155,7 +156,7 @@ interface APIType {
     )}
 }
 
-export default function API<T>(http: T): APIType {
+export default function ServiceRequest<T>(http: T): APIType {
 ${list.reduce(
     (prev, next) =>
         (prev += `const ${humpName(next.serviceName)} = ${humpName(
@@ -209,31 +210,20 @@ export const humpName = (name: string): string => {
         );
 };
 
-export const outputApi = () => {
+export const outputApi = async () => {
     let str = exportApi();
-    fs.writeFile(
-        paths.resolve(global.options.outputPath, "request.ts"),
-        str,
-        (err) => {
-            console.log(err);
-        }
-    );
+    try {
+        await new Promise((resolve, reject) => {
+            fs.writeFile(
+                paths.resolve(global.options.outputPath, "request.ts"),
+                str,
+                (err) => {
+                    if (err) reject(err);
+                    resolve(null);
+                }
+            );
+        });
+    } catch (error) {
+        Promise.reject(error);
+    }
 };
-
-// export const ${operationId} = function(this:any,params:${parameters}):Promise<${backParams}> {
-
-//     let { query, path, formData, body } = params;
-//     let url = "${url}";
-//     if( path ) {
-//         url = pathAddToUrl(url, path);
-//     }
-//     if(method === "post"){
-//         let search = '';
-//         for(let key in query){
-//             let val = query[key]
-//             search = search ? search + '&' + val : val;
-//         }
-//         url = url + (search?'?'+search:'');
-//     }
-//     return this.__http[method](url,query) as any;
-// }

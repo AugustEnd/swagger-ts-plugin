@@ -211,7 +211,7 @@ export const handleServiceUrl = (
 ): Array<IServiceProps> => {
     let { serverList } = global.options;
     // 保存，存在服务ip的数据
-    let arrFilter = serverList.filter(
+    let arrFilter = (serverList || []).filter(
         (el) => typeof el !== "string"
     ) as Array<IServiceProps>;
 

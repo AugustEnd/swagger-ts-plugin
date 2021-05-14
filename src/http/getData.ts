@@ -7,8 +7,9 @@ import { IServiceProps, IServiceApiDocProps, IDocProps } from "../index.d";
 
 export const getData = async () => {
     const { apiDocList } = global.options;
-    let serviceArr = await completeServiceList();
+
     try {
+        let serviceArr = await completeServiceList();
         // 已获取到所有服务数据
         let values: Array<IDocProps> = [];
         if (apiDocList?.length !== 0) {
@@ -28,7 +29,9 @@ export const getData = async () => {
         }
 
         return Promise.resolve(values);
-    } catch (error) {}
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 /**

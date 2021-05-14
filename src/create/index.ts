@@ -1,30 +1,28 @@
 const path = require("path");
+const child_process = require("child_process");
 
-import {
-    completeInterfaceAll,
-    handleServiceUrl,
-} from "../handleStr/interface/index";
+import { completeInterfaceAll } from "../handleStr/interface/index";
 
 import { completePathAll } from "../handleStr/paths/index";
-
-import completeServiceList from "../http/serviceInfo";
+import { outputApi } from "../handleStr/createFn/index";
 // 辅助方法
-import {
-    collectChinese,
-    translateAndChangeChinese,
-    exchangeZhToEn,
-} from "./helper";
+import { collectChinese, translateAndChangeChinese } from "./helper";
 // 翻译
 import { getTranslateInfo } from "../translation/index";
 
 import { getData } from "../http/getData";
 // 类型
-import { ISwaggerProps, IServiceProps } from "../index.d";
+import { ISwaggerProps } from "../index.d";
+import { resolve } from "node:path";
+import { rejects } from "node:assert";
 
 export async function startCreate(options: ISwaggerProps) {
     const { outputPath, serverList, appUrl } = options;
     global.options = options;
-    if (serverList.length === 0) return;
+    if (serverList?.length === 0) {
+        console.log("\x1B[31m%s\x1B[0m", `未传入服务列表，swagger2ts插件EXIT`);
+        return;
+    }
     try {
         let values = await getData();
 
@@ -54,14 +52,36 @@ export async function startCreate(options: ISwaggerProps) {
                         name: el.serviceName,
                         rootPath: path.resolve(outputPath),
                     });
+
                     return Promise.resolve();
                 } catch (error) {
                     return Promise.reject(error);
                 }
             })
         );
+        await outputApi();
+        // await new Promise((resolve, reject) => {
+        //     child_process.exec(
+        //         `npx prettier --write --tab-width 4  ${outputPath}/**/*.{ts,json}`,
+        //         {},
+        //         (error: any) => {
+        //             if (error) {
+        //                 console.log(
+        //                     "格式化失败",
+        //                     typeof error,
+        //                     error.toString()
+        //                 );
+        //                 resolve(error);
+        //             } else {
+        //                 resolve(null);
+        //                 console.log("格式化成功 ");
+        //             }
+        //         }
+        //     );
+        // });
+        console.log(outputPath, "outputPath");
         return Promise.resolve("转换完成");
     } catch (error) {
-        return Promise.reject(error);
+        return Promise.resolve(error);
     }
 }

@@ -1,6 +1,6 @@
 {
     "name": "swagger-ts-plugin",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "description": "获取swagger信息转ts接口",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",
@@ -11,6 +11,7 @@
     ],
     "scripts": {
         "build": "cross-env ts-node ./src/del.ts && tsc && babel lib --out-dir lib",
+        "prepublishOnly": "yarn build",
         "test": "cross-env ts-node ./src/execute/index.ts"
     },
     "author": {
@@ -27,6 +28,7 @@
         "@types/node": "^14.14.22",
         "axios": "^0.21.1",
         "cross-env": "^7.0.3",
+        "prettier": "^2.3.0",
         "tms-request": "^0.0.32",
         "ts-loader": "^8.0.14",
         "ts-node": "^9.1.1",

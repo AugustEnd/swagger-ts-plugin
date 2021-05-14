@@ -6,6 +6,7 @@ import * as http from "http";
 // 类型
 import { IServiceProps } from "../index.d";
 import { IEurekaBack } from "./index.d";
+import { rejects } from "node:assert";
 
 /**
  * 获取完成用户填写的完整服务地址
@@ -16,7 +17,6 @@ const completeServiceList = async () => {
     let serviceArr: Array<IServiceProps> = [];
     // 所有服务信息
     const { data: appList } = await getAllServiceList();
-
     // 获取所有服务请求前完整信息，包含服务名称和服务ip
     serviceArr = handleServiceUrl(appList);
 
@@ -46,11 +46,18 @@ export const getAllServiceList = async (): Promise<{
     data: Array<IEurekaBack>;
 }> => {
     let url = global.options.appUrl || "http://eureka.dev.com:1111/eureka/apps";
-
+    // console.log(
+    //     "\x1B[32m%s\x1B[0m",
+    //     `swagger2ts插件生成的数据属于 ${
+    //         url.includes(".dev.") ? "DEV" : "TEST"
+    //     } 环境`
+    // );
     try {
         const msg = (await new Promise((resolve, reject) => {
             http.get(url, (val: any) => {
                 resolve(val);
+            }).on("error", (e: any) => {
+                reject(e);
             });
         })) as any;
 
@@ -66,8 +73,8 @@ export const getAllServiceList = async (): Promise<{
             msg.on("end", () => {
                 resolve({
                     data:
-                        (parser.parse(rawData).applications
-                            .application as Array<IEurekaBack>) || [],
+                        (parser.parse(rawData)?.applications
+                            ?.application as Array<IEurekaBack>) || [],
                 });
             });
         });
