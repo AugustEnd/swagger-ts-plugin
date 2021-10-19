@@ -1,6 +1,11 @@
 import { handleSpecialSymbol } from "../../utils/common";
 import * as fs from "fs";
-import { typeMap, switchType } from "../interface";
+import {
+    typeMap,
+    switchType,
+    dTagSwitchType,
+    simpleSwitchType,
+} from "../interface";
 import { exchangeZhToEn } from "../../create/helper";
 
 // 类型
@@ -49,12 +54,10 @@ export const completePath = (
         if (val[method as Methods].deprecated) continue;
 
         let str = "";
-        const { parameters, responses, operationId, summary, consumes } = val[
-            method as Methods
-        ];
+        const { parameters, responses, operationId, summary, consumes } =
+            val[method as Methods];
         // 出参
-        let { name, type } = responseType(responses);
-        let importName = name;
+        let { name: importName, type, isBuiltin } = responseType(responses);
 
         // 入参
         let paramObj = requestType(
@@ -78,7 +81,9 @@ export const completePath = (
             };
         };`;
 
-        importName && importNames.push(handleSpecialSymbol(importName));
+        !isBuiltin &&
+            importName &&
+            importNames.push(handleSpecialSymbol(importName));
 
         list.push({
             str,
@@ -202,22 +207,45 @@ export interface pathsObj {\n${str}}`;
  */
 export const responseType = (
     responses: IDocPathsMethod["responses"]
-): { name: string; type: string } => {
+): { name: string; type: string; isBuiltin: boolean } => {
     let dto = null;
     let type;
+    let isBuiltin = false;
     if (responses && responses?.[200]?.schema) {
         if (responses[200].schema?.$ref) {
-            dto = responses?.[200].schema.$ref.split("/")[2];
+            dto = responses?.[200].schema.$ref.replace("#/definitions/", "");
         }
         if (responses[200].schema?.items) {
             dto = responses[200].schema.items.$ref
-                ? responses[200].schema.items.$ref.split("/")[2]
+                ? responses[200].schema.items.$ref.replace("#/definitions/", "")
                 : null;
             type = responses[200].schema.type;
         }
     }
+    if (/^Map«[^»]+»$/.test(dto)) {
+        // 'Map«string,string»'
+        isBuiltin = true;
+        let parmas = dto.replace(/Map«|»/g, "").split(",");
+        // console.log(dto, "---");
+        dto = `Record<${dTagSwitchType(
+            parmas[0] as any,
+            undefined,
+            "strict",
+            true,
+            undefined,
+            undefined
+        )},${dTagSwitchType(
+            parmas[1] as any,
+            undefined,
+            "strict",
+            true,
+            undefined,
+            undefined
+        )}>`;
 
-    return { name: handleSpecialSymbol(dto), type };
+        return { name: dto, type, isBuiltin };
+    }
+    return { name: handleSpecialSymbol(dto), type, isBuiltin };
 };
 
 /**
@@ -243,7 +271,7 @@ export const requestType = (
     let collectNames = new Set();
     let queryStr = query.reduce(
         (a: string, b: IDocPathsParamsItem) =>
-            `${a}"${b.name}"${!b.required ? "?" : ""}: ${switchType(
+            `${a}"${b.name}"${!b.required ? "?" : ""}: ${dTagSwitchType(
                 b.type,
                 undefined,
                 "strict",
@@ -256,7 +284,7 @@ export const requestType = (
 
     let pathStr = path.reduce(
         (a: string, b: IDocPathsParamsItem) =>
-            `${a}${b.name}: ${switchType(
+            `${a}${b.name}: ${dTagSwitchType(
                 b.type,
                 undefined,
                 "strict",
@@ -269,9 +297,9 @@ export const requestType = (
 
     let bodyStr = body.reduce((a: string, b: IDocPathsParamsItem) => {
         if (b?.schema) {
-            let name = switchType(
+            let name = dTagSwitchType(
                 b.type,
-                b.schema?.$ref?.split("/")[2] || null,
+                b.schema?.$ref?.replace("#/definitions/", "") || null,
                 "strict",
                 b.required,
                 b?.enum,
@@ -285,12 +313,16 @@ export const requestType = (
                     : b.schema?.items?.type;
 
                 return `Array<${
-                    varType.includes(type) ? type : `Partial<${type}>`
+                    varType.includes(type)
+                        ? type
+                        : `Partial<${simpleSwitchType(type)}>`
                 }>;`;
             } else {
                 let type = exchangeZhToEn(name).str;
                 return `${
-                    varType.includes(type) ? type : `Partial<${type}>`
+                    varType.includes(type)
+                        ? type
+                        : `Partial<${simpleSwitchType(type)}>`
                 };\n`;
             }
         }
@@ -313,7 +345,7 @@ export const requestType = (
                 ? `
             path:{
                 ${pathStr}
-            }`
+            };`
                 : ""
         }${
             bodyStr

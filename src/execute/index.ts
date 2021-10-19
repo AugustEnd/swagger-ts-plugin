@@ -4,11 +4,11 @@ import defaultValue from "../create/defaultValue";
 const path = require("path");
 
 const execute = async () => {
-    await startCreate({
-        ...defaultValue,
-        serverList: ["sms-service", "trialpartner-web", "trialos-service"],
-        appUrl: "http://eureka.test.com:1111/eureka/apps",
-    });
+  await startCreate({
+    ...defaultValue,
+    serverList: ["sms-service"],
+    appUrl: "http://eureka.dev.com:1111/eureka/apps",
+  });
 };
 
 execute();

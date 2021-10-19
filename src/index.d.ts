@@ -57,6 +57,7 @@ export type JavaType =
     | "string"
     | "integer"
     | "number"
+    | "long"
     | "object"
     | "file"
     | undefined;

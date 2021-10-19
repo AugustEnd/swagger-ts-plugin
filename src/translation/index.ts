@@ -18,7 +18,6 @@ export async function getTranslateInfo(values: Array<string>) {
     );
     // 过滤掉已翻译的
     values = values.filter((el) => !translationObj.hasOwnProperty(el));
-
     try {
         await zhiyiTranslationHandle(values, translationObj);
     } catch (error) {

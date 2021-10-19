@@ -12,6 +12,7 @@ import { IEurekaBack, IEurekaItem } from "../../http/index.d";
  * @param use 是否启用严格模式，正常模式 string|null or number|null等，严格模式 string or number等
  */
 
+const TAG = "T0000000001";
 export const typeMap = (
     {
         type,
@@ -31,13 +32,27 @@ export const typeMap = (
 ): string => {
     const childProps =
         (items?.type && typeMap(items, "strict", fn)) ||
-        items?.$ref?.split("/")[2] ||
-        $ref?.split("/")[2] ||
+        items?.$ref?.replace("#/definitions/", "") ||
+        $ref?.replace("#/definitions/", "") ||
         null;
 
     return switchType(type, childProps, use, required, enumType, fn);
 };
 
+// 删除标记
+export const dTagSwitchType = (
+    type: JavaType,
+    childProps: unknown,
+    use: "strict",
+    required: boolean,
+    enumType?: Array<string>,
+    fn?: (name: string) => void
+) => {
+    return switchType(type, childProps, use, required, enumType, fn).replace(
+        new RegExp(`${TAG}$`),
+        ""
+    );
+};
 export const switchType = (
     type: JavaType,
     childProps: unknown,
@@ -46,7 +61,7 @@ export const switchType = (
     enumType?: Array<string>,
     fn?: (name: string) => void
 ) => {
-    switch (type) {
+    switch (type?.toLowerCase()) {
         case "string":
             if (enumType && enumType.length > 0) {
                 return enumType.reduce(
@@ -54,9 +69,13 @@ export const switchType = (
                         prev ? `${prev} | "${next}"` : `"${next}"`,
                     ""
                 );
+                // + TAG
             }
             return use === "strict" ? "string" : "string | null";
         case "number":
+            return use === "strict" ? "number" : "number | null";
+
+        case "long":
             return use === "strict" ? "number" : "number | null";
         case "integer":
             return use === "strict" ? "number" : "number | null";
@@ -65,7 +84,23 @@ export const switchType = (
         case "file":
             return use === "strict" ? "FormData" : "FormData | null";
         case "array":
-            let name = handleSpecialSymbol(childProps);
+            let name = "";
+            // if(new RegExp(`${TAG}$`).test(childProps as string)){
+
+            // }else{
+
+            // }
+            if (/\"\S+\"/.test(childProps as string)) {
+                name = childProps as string;
+            } else {
+                name = handleSpecialSymbol(childProps);
+                // switchType(
+                //     childProps as JavaType,
+                //     null,
+                //     "strict",
+                //     true
+                // ) as string
+            }
             fn && fn(name);
             return use === "strict"
                 ? `Array<${name}>`
@@ -76,6 +111,27 @@ export const switchType = (
             let nameDefault = handleSpecialSymbol(childProps);
             fn && fn(nameDefault);
             return nameDefault || "any";
+    }
+};
+
+/**
+ * 浅转换，不递归
+ * @param type
+ * @returns string
+ */
+
+export const simpleSwitchType = (type: string) => {
+    switch (type?.toLowerCase()) {
+        case "integer":
+            return "number";
+        case "file":
+            return "FormData";
+        case "long":
+            return "number";
+        case "array":
+            return "Array<any>";
+        default:
+            return type;
     }
 };
 
@@ -211,11 +267,16 @@ export const handleServiceUrl = (
 ): Array<IServiceProps> => {
     let { serverList } = global.options;
     // 保存，存在服务ip的数据
-    let arrFilter = (serverList || []).filter(
-        (el) => typeof el !== "string"
-    ) as Array<IServiceProps>;
+    let arrFilter = (serverList || [])
+        .filter((el) => typeof el !== "string")
+        .map((el: IServiceProps) => {
+            el.serviceName = el.serviceName.toLowerCase();
+            return el;
+        });
 
-    serverList = serverList.filter((el) => typeof el === "string");
+    serverList = serverList
+        .filter((el) => typeof el === "string")
+        .map((el: string) => el.toLowerCase());
 
     let mySet = new Set(serverList);
     return appList
@@ -233,7 +294,7 @@ export const handleServiceUrl = (
             el.instance = el.instance as IEurekaItem;
 
             return {
-                serviceName: el.instance.vipAddress,
+                serviceName: el.instance.vipAddress.toLowerCase(),
                 serviceUrl: el.instance.homePageUrl,
             };
         })

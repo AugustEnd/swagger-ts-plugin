@@ -146,7 +146,7 @@ export const exportFn = (
 export const exportApi = () => {
     let list = global.options.apiDocList;
     return `${getApiImport()}
-interface APIType {
+export interface APIType {
     ${list.reduce(
         (prev, next) =>
             (prev += `${humpName(

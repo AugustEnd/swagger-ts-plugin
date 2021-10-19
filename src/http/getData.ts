@@ -27,7 +27,11 @@ export const getData = async () => {
                 )
             ).filter((el) => el);
         }
-
+        // fs.writeFile(
+        //   paths.resolve(__dirname, `./a.json`),
+        //   JSON.stringify(values, null, 4),
+        //   () => {}
+        // );
         return Promise.resolve(values);
     } catch (error) {
         console.log(error);
@@ -244,8 +248,42 @@ export const swagger3to2 = (data: any) => {
                             name: "",
                             contentType: key,
                             required: true,
-                            schema: content[key].schema || null,
+                            schema:
+                                content[key].schema?.$ref?.replace(
+                                    /components\/schemas/g,
+                                    "definitions"
+                                ) || null,
                         });
+                    }
+                }
+                if (methodData.responses) {
+                    let keys = Object.keys(
+                        methodData.responses["200"]?.content || {}
+                    );
+                    if (keys.length > 0) {
+                        let obj =
+                            methodData.responses["200"].content?.[keys[0]];
+                        methodData.responses["200"] = obj;
+                        if (methodData.responses["200"].schema?.$ref) {
+                            methodData.responses["200"].schema.$ref =
+                                methodData.responses[
+                                    "200"
+                                ].schema?.$ref?.replace(
+                                    /components\/schemas/g,
+                                    "definitions"
+                                ) || null;
+                        }
+                        if (methodData.responses["200"].schema?.items?.$ref) {
+                            methodData.responses["200"].schema.items.$ref =
+                                methodData.responses[
+                                    "200"
+                                ].schema.items.$ref?.replace(
+                                    /components\/schemas/g,
+                                    "definitions"
+                                ) || null;
+                        }
+
+                        delete methodData.responses["200"].content;
                     }
                 }
             }
